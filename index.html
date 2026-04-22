@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>景心如意 · 产品手卡管理系统</title>
+  <style>
+    :root{--gold:#C4956A;--gold-light:#E8D5B7;--dark:#1a1a1a;--bg:#F9F5F1;--card-bg:#FFFFFF;--text:#333;--text-light:#888;--border:#E5DDD5;--success:#4CAF50;--danger:#E53935}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{background:var(--dark);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+    .header h1{font-size:18px;font-weight:600}
+    .header h1 span{color:var(--gold)}
+    .main{max-width:1400px;margin:0 auto;padding:24px}
+    .tabs{display:flex;gap:8px;margin-bottom:24px}
+    .tab{padding:10px 24px;border:none;background:#fff;border-radius:8px;cursor:pointer;font-size:14px}
+    .tab:hover{background:var(--gold-light)}
+    .tab.active{background:var(--gold);color:#fff}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px}
+    .btn-primary{background:var(--gold);color:#fff}
+    .btn-primary:hover{background:#b3845a}
+    .btn-secondary{background:#fff;border:1px solid var(--border)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    .search-bar{display:flex;gap:12px;margin-bottom:20px}
+    .search-bar input{flex:1;padding:10px 16px;border:1px solid var(--border);border-radius:8px;font-size:14px}
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+    .product-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .2s;cursor:pointer;position:relative}
+    .product-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .product-card.selected{outline:3px solid var(--gold)}
+    .product-card img{width:100%;height:200px;object-fit:cover;background:var(--bg)}
+    .product-card .info{padding:16px}
+    .product-card .name{font-size:16px;font-weight:600;margin-bottom:8px}
+    .product-card .meta{font-size:12px;color:var(--text-light);display:flex;gap:12px}
+    .product-card .price{font-size:18px;color:var(--gold);font-weight:600;margin-top:8px}
+    .product-card .checkbox{position:absolute;top:12px;right:12px;width:24px;height:24px;background:#fff;border:2px solid var(--border);border-radius:50%;display:none;align-items:center;justify-content:center}
+    .product-card.selected .checkbox{display:flex;background:var(--gold);border-color:var(--gold);color:#fff}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--text-light)}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;margin-bottom:6px;font-size:14px;font-weight:500}
+    .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit}
+    .form-group textarea{min-height:80px;resize:vertical}
+    .form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    .form-section{background:#fff;padding:24px;border-radius:12px;margin-bottom:20px}
+    .form-section h3{font-size:16px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .image-upload{border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer}
+    .image-upload:hover{border-color:var(--gold);background:rgba(196,149,106,.05)}
+    .image-upload input{display:none}
+    .image-preview{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .image-preview .img-item{position:relative;width:120px;height:120px;border-radius:8px;overflow:hidden}
+    .image-preview .img-item img{width:100%;height:100%;object-fit:cover}
+    .image-preview .img-item .remove{position:absolute;top:4px;right:4px;width:24px;height:24px;background:var(--danger);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:14px;line-height:24px}
+    .ai-btn{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+    .preview-area{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
+    .preview-area.show{display:flex}
+    .preview-content{background:#fff;border-radius:16px;width:960px;max-height:90vh;overflow:auto}
+    .preview-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .preview-actions{display:flex;gap:12px}
+    .card-preview{width:960px;min-height:540px;background:#fff;font-family:'Microsoft YaHei',sans-serif;overflow:hidden}
+    .card-header{background:var(--dark);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;min-height:64px}
+    .card-header h2{font-size:20px}
+    .card-header .live-tag{background:var(--danger);padding:4px 12px;border-radius:4px;font-size:12px}
+    .card-prices{display:grid;grid-template-columns:repeat(3,1fr);background:#2a2a2a}
+    .price-item{padding:12px 16px;text-align:center;border-right:1px solid #444}
+    .price-item:last-child{border-right:none}
+    .price-label{font-size:12px;color:#999;margin-bottom:4px}
+    .price-value{font-size:20px;color:var(--gold);font-weight:600}
+    .price-value.stock{color:#4CAF50;font-size:16px}
+    .card-body{display:grid;grid-template-columns:1fr 1fr;min-height:400px}
+    .card-left{padding:20px 24px;overflow-y:auto;max-height:400px}
+    .card-section{margin-bottom:16px}
+    .card-section h4{font-size:12px;color:var(--text-light);margin-bottom:4px}
+    .card-section p{font-size:14px;line-height:1.6}
+    .card-right{background:var(--bg);padding:16px;display:flex;flex-direction:column}
+    .card-specs{margin-bottom:16px}
+    .card-spec{display:flex;font-size:13px;margin-bottom:6px}
+    .card-spec .label{color:var(--text-light);width:80px}
+    .card-spec .value{font-weight:500}
+    .card-image{flex:1;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:200px}
+    .card-image img{max-width:100%;max-height:100%;object-fit:contain}
+    .card-footer{background:var(--bg);padding:10px 24px;display:flex;justify-content:space-between;font-size:12px;color:var(--text-light);min-height:40px;align-items:center}
+    .card-footer .brand{color:var(--gold);font-weight:600}
+    .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:2000}
+    .modal.show{display:flex}
+    .modal-content{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:500px}
+    .modal h3{font-size:18px;margin-bottom:16px}
+    .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+    .error-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:3000}
+    .error-modal.show{display:flex}
+    .error-content{background:#fff;border-radius:16px;padding:32px;width:90%;max-width:450px;text-align:center}
+    .error-icon{font-size:48px;margin-bottom:16px}
+    .error-title{font-size:18px;font-weight:600;margin-bottom:12px;color:var(--danger)}
+    .error-message{font-size:14px;color:var(--text-light);line-height:1.6;margin-bottom:20px;white-space:pre-wrap;text-align:left;background:#f5f5f5;padding:16px;border-radius:8px;max-height:200px;overflow-y:auto}
+    .export-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:2500;flex-direction:column;color:#fff}
+    .export-mask.show{display:flex}
+    .export-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .export-msg{font-size:16px;margin-bottom:16px}
+    .export-bar{width:300px;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
+    .export-bar-fill{height:100%;background:var(--gold);transition:width .3s}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark);color:#fff;padding:14px 28px;border-radius:8px;font-size:14px;transition:transform .3s;z-index:4000}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.success{background:var(--success)}
+    .multi-select-bar{background:var(--gold);color:#fff;padding:12px 24px;display:none;align-items:center;justify-content:space-between;border-radius:12px;margin-bottom:20px}
+    .multi-select-bar.show{display:flex}
+    .multi-select-bar .count{font-size:14px}
+    .multi-select-bar .actions{display:flex;gap:12px}
+    .id-hint{font-size:12px;margin-top:4px}
+    .id-hint.valid{color:var(--success)}
+    .id-hint.invalid{color:var(--danger)}
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>景心如意 <span>·</span> 产品手卡管理系统</h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="enterSelectMode()">多选导出</button>
+      <button class="btn btn-primary" onclick="switchView('new')">+ 新建手卡</button>
+    </div>
+  </header>
+  <main class="main">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-view="library" onclick="switchView('library')">📦 产品库</button>
+      <button class="tab" data-view="new" onclick="switchView('new')">✏️ 新建手卡</button>
+    </div>
+    <div class="multi-select-bar" id="multiSelectBar">
+      <div class="count">已选择 <strong id="selectedCount">0</strong> 个产品</div>
+      <div class="actions">
+        <button class="btn btn-sm btn-secondary" onclick="cancelSelectMode()">取消</button>
+        <button class="btn btn-sm btn-primary" onclick="batchExportPPT()">📥 批量导出 PPT</button>
+      </div>
+    </div>
+    <div id="libraryView">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="搜索产品名称或编号..." oninput="filterProducts()">
+        <select id="filterSelect" onchange="filterProducts()">
+          <option value="">全部产品</option>
+          <option value="in_stock">有库存</option>
+          <option value="out_of_stock">缺货</option>
+        </select>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <h3>暂无产品</h3>
+        <p>点击右上角「新建手卡」开始添加</p>
+      </div>
+    </div>
+    <div id="newView" class="hidden">
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-section">
+          <h3>📝 基础信息</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>产品名称 *</label>
+              <input type="text" name="name" required placeholder="如：达拉干沉水级手串">
+            </div>
+            <div class="form-group">
+              <label>产品编号 *</label>
+              <input type="text" name="id" id="productIdInput" required placeholder="如：JX-2024-001" oninput="checkProductId()">
+              <div class="id-hint" id="idHint"></div>
+            </div>
+            <div class="form-group">
+              <label>达人专属前缀</label>
+              <input type="text" name="prefix" placeholder="如：【薛佳凝专属】">
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>💰 价格与库存</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>日常价 (元)</label>
+              <input type="number" name="dailyPrice" placeholder="如：6800">
+            </div>
+            <div class="form-group">
+              <label>直播价 (元) *</label>
+              <input type="number" name="livePrice" required placeholder="如：3980">
+            </div>
+            <div class="form-group">
+              <label>库存数量</label>
+              <input type="number" name="stock" placeholder="如：5">
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>📏 产品规格</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>产地</label>
+              <input type="text" name="origin" placeholder="如：达拉干">
+            </div>
+            <div class="form-group">
+              <label>尺寸</label>
+              <input type="text" name="size" placeholder="如：8mm×19颗">
+            </div>
+            <div class="form-group">
+              <label>手围/长度</label>
+              <input type="text" name="length" placeholder="如：15-18cm可调">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>配件材质</label>
+            <input type="text" name="material" placeholder="如：纯银镀金配饰">
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>✍️ 产品文案 <button type="button" class="ai-btn" onclick="generateAI()">🤖 AI 生成</button></h3>
+          <div class="form-group">
+            <label>产品介绍</label>
+            <textarea name="intro" placeholder="沉香手串，源自马来西亚达拉干核心产区..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>产地介绍</label>
+            <textarea name="originDesc" placeholder="达拉干是沉香最著名的产区之一..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>设计诠释</label>
+            <textarea name="design" placeholder="每一颗珠子都经过精心挑选..."></textarea>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>🚚 物流信息</h3>
+          <div class="form-group">
+            <label>物流说明</label>
+            <input type="text" name="logistics" placeholder="顺丰包邮｜附鉴定证书｜7天无理由">
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>🖼️ 产品图片</h3>
+          <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+            <input type="file" id="imageInput" multiple accept="image/*" onchange="handleImageUpload(event)">
+            <p>点击上传图片或拖拽到此处</p>
+            <p style="font-size:12px;color:#999;margin-top:8px;">支持 JPG、PNG 格式</p>
+          </div>
+          <div class="image-preview" id="imagePreview"></div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="switchView('library')">取消</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">保存手卡</button>
+        </div>
+      </form>
+    </div>
+  </main>
+  <div class="preview-area" id="previewArea">
+    <div class="preview-content">
+      <div class="preview-header">
+        <h3>手卡预览</h3>
+        <div class="preview-actions">
+          <button class="btn btn-secondary" onclick="editFromPreview()">✏️ 编辑</button>
+          <button class="btn btn-primary" onclick="exportSinglePPT()">📥 导出 PPT</button>
+          <button class="btn btn-secondary" onclick="closePreview()">关闭</button>
+        </div>
+      </div>
+      <div id="previewContent"></div>
+    </div>
+  </div>
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <h3>确认删除</h3>
+      <p>确定要删除这个产品吗？此操作无法撤销。</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">删除</button>
+      </div>
+    </div>
+  </div>
+  <div class="error-modal" id="errorModal">
+    <div class="error-content">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title" id="errorTitle">操作失败</div>
+      <div class="error-message" id="errorMessage"></div>
+      <button class="btn btn-primary" onclick="closeErrorModal()">知道了</button>
+    </div>
+  </div>
+  <div class="export-mask" id="exportMask">
+    <div class="export-spinner"></div>
+    <div class="export-msg" id="exportMsg">正在导出...</div>
+    <div class="export-bar"><div class="export-bar-fill" id="exportBar" style="width:0%"></div></div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+  <script>
+    // 诊断代码 - 检查库是否正确加载
+    (function(){
+      var hasJSZip = typeof JSZip !== 'undefined';
+      var hasPptxGenJS = typeof PptxGenJS !== 'undefined';
+      console.log('📦 pptxgen 诊断:');
+      console.log('  - JSZip:', hasJSZip ? '✓ 存在' : '✗ 不存在');
+      console.log('  - PptxGenJS:', hasPptxGenJS ? '✓ 存在' : '✗ 不存在');
+      if (!hasJSZip || !hasPptxGenJS) {
+        console.warn('⚠️ pptxgen 库未正确加载，请检查控制台 (F12) 或刷新页面');
+      } else {
+        console.log('✅ pptxgen 库加载成功');
+      }
+    })();
+    
+    let products=JSON.parse(localStorage.getItem('jxry_products')||'[]'),images=JSON.parse(localStorage.getItem('jxry_images')||'{}'),editingId=null,currentPreviewId=null,selectMode=false,selectedIds=new Set(),pendingImages=[];
+    function saveData(){localStorage.setItem('jxry_products',JSON.stringify(products));localStorage.setItem('jxry_images',JSON.stringify(images))}
+    function switchView(name){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelector('.tab[data-view="'+name+'"]')?.classList.add('active');document.getElementById('libraryView').classList.toggle('hidden',name!=='library');document.getElementById('newView').classList.toggle('hidden',name!=='new');if(name==='library')renderProducts()}
+    function renderProducts(){const grid=document.getElementById('productGrid'),empty=document.getElementById('emptyState'),search=document.getElementById('searchInput').value.toLowerCase(),filter=document.getElementById('filterSelect').value;let filtered=products.filter(p=>{const matchSearch=!search||(p.name||'').toLowerCase().includes(search)||(p.id||'').toLowerCase().includes(search);const stock=parseInt(p.stock)||0,matchFilter=!filter||(filter==='in_stock'&&stock>0)||(filter==='out_of_stock'&&stock===0);return matchSearch&&matchFilter});if(filtered.length===0){grid.innerHTML='';empty.style.display='block';return}empty.style.display='none';grid.innerHTML=filtered.map(p=>{const imgList=images[p.id]||[],mainImg=imgList[0]||'',isSelected=selectedIds.has(p.id);return'<div class="product-card '+(isSelected?'selected':'')+'" onclick="handleCardClick(event,\''+p.id+'\')"><div class="checkbox">✓</div>'+(mainImg?'<img src="'+mainImg+'" alt="'+p.name+'">':'<div style="height:200px;background:#f0ebe6;display:flex;align-items:center;justify-content:center;color:#999;">暂无图片</div>')+'<div class="info"><div class="name">'+(p.prefix||'')+p.name+'</div><div class="meta"><span>📦 '+(p.stock||0)+'件</span><span>📍 '+(p.origin||'-')+'</span></div><div class="price">¥'+(p.livePrice||p.dailyPrice||'—')+'</div></div></div>'}).join('')}
+    function filterProducts(){renderProducts()}
+    function enterSelectMode(){selectMode=true;selectedIds.clear();document.getElementById('multiSelectBar').classList.add('show');renderProducts()}
+    function cancelSelectMode(){selectMode=false;selectedIds.clear();document.getElementById('multiSelectBar').classList.remove('show');renderProducts()}
+    function handleCardClick(e,id){e.stopPropagation();if(!selectMode){showPreview(id);return}if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);document.getElementById('selectedCount').textContent=selectedIds.size;renderProducts()}
+    function handleImageUpload(e){const files=Array.from(e.target.files);files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{pendingImages.push(ev.target.result);renderImagePreview()};reader.readAsDataURL(file)});e.target.value=''}
+    function renderImagePreview(){const container=document.getElementById('imagePreview'),existing=editingId?(images[editingId]||[]).length:0;container.innerHTML=(editingId?[...(images[editingId]||[]),...pendingImages]:pendingImages).map((src,i)=>'<div class="img-item"><img src="'+src+'" alt="图片'+(i+1)+'"><button class="remove" onclick="removeImage('+i+')">×</button></div>').join('')}
+    function removeImage(index){const existing=editingId?(images[editingId]||[]).length:0;if(index<existing){if(editingId)images[editingId].splice(index,1)}else{pendingImages.splice(index-existing,1)}renderImagePreview()}
+    function checkProductId(){const input=document.getElementById('productIdInput'),hint=document.getElementById('idHint'),val=input.value.trim();if(!val){hint.textContent='';return}const exists=products.some(p=>p.id===val&&p.id!==editingId);if(exists){hint.textContent='❌ 编号已存在';hint.className='id-hint invalid';input.setCustomValidity('编号已存在')}else{hint.textContent='✓ 可用';hint.className='id-hint valid';input.setCustomValidity('')}}
+    function saveProduct(e){e.preventDefault();const form=e.target,formData=new FormData(form),data=Object.fromEntries(formData.entries());const exists=products.some(p=>p.id===data.id&&p.id!==editingId);if(exists){showErrorModal('保存失败','产品编号已存在，请使用其他编号');return}if(editingId){images[editingId]=[...(images[editingId]||[]),...pendingImages].slice(0,5)}else{images[data.id]=pendingImages.slice(0,5)}if(editingId){const idx=products.findIndex(p=>p.id===editingId);if(idx!==-1)products[idx]={...products[idx],...data}}else{products.push(data)}saveData();pendingImages=[];editingId=null;document.getElementById('productForm').reset();document.getElementById('imagePreview').innerHTML='';showToast('保存成功！','success');switchView('library')}
+    function showPreview(id){currentPreviewId=id;const p=products.find(x=>x.id===id);if(!p)return;const imgList=images[id]||[],mainImg=imgList[0]||'';document.getElementById('previewContent').innerHTML='<div class="card-preview"><div class="card-header"><h2>'+(p.prefix||'')+p.name+'</h2><span class="live-tag">直播专享</span></div><div class="card-prices"><div class="price-item"><div class="price-label">日常价</div><div class="price-value">¥'+(p.dailyPrice||'—')+'</div></div><div class="price-item"><div class="price-label">库 存</div><div class="price-value stock">'+(p.stock||0)+' 件</div></div><div class="price-item"><div class="price-label">直播价</div><div class="price-value">¥'+(p.livePrice||'—')+'</div></div></div><div class="card-body"><div class="card-left">'+(p.intro?'<div class="card-section"><h4>产品介绍</h4><p>'+p.intro+'</p></div>':'')+(p.originDesc?'<div class="card-section"><h4>产地介绍</h4><p>'+p.originDesc+'</p></div>':'')+(p.design?'<div class="card-section"><h4>设计诠释</h4><p>'+p.design+'</p></div>':'')+'</div><div class="card-right"><div class="card-specs">'+(p.origin?'<div class="card-spec"><span class="label">产地</span><span class="value">'+p.origin+'</span></div>':'')+(p.size?'<div class="card-spec"><span class="label">尺寸</span><span class="value">'+p.size+'</span></div>':'')+(p.length?'<div class="card-spec"><span class="label">手围</span><span class="value">'+p.length+'</span></div>':'')+(p.material?'<div class="card-spec"><span class="label">材质</span><span class="value">'+p.material+'</span></div>':'')+'</div><div class="card-image">'+(mainImg?'<img src="'+mainImg+'" alt="产品图片">':'<span class="placeholder">暂无图片</span>')+'</div></div></div><div class="card-footer"><span>📦 '+(p.logistics||'顺丰包邮 | 附鉴定证书')+'</span><span class="brand">景心如意 JXRY</span></div></div>';document.getElementById('previewArea').classList.add('show')}
+    function closePreview(){document.getElementById('previewArea').classList.remove('show')}
+    function editFromPreview(){if(!currentPreviewId)return;const p=products.find(x=>x.id===currentPreviewId);if(!p)return;editingId=currentPreviewId;pendingImages=[];closePreview();Object.keys(p).forEach(key=>{const input=document.querySelector('[name="'+key+'"]');if(input)input.value=p[key]||''});checkProductId();renderImagePreview();document.getElementById('submitBtn').textContent='更新手卡';switchView('new')}
+    let deleteTargetId=null;function showDeleteModal(id){deleteTargetId=id;document.getElementById('deleteModal').classList.add('show')}function closeDeleteModal(){deleteTargetId=null;document.getElementById('deleteModal').classList.remove('show')}function confirmDelete(){if(!deleteTargetId)return;products=products.filter(p=>p.id!==deleteTargetId);delete images[deleteTargetId];saveData();closeDeleteModal();renderProducts();showToast('已删除','success')}
+    function generateAI(){const templates={intro:['这款沉香手串精选自核心产区，原材历经数十年自然醇化，油脂饱满，香气馥郁。佩戴时香气随体温散发，淡雅而持久，是品香与审美的完美结合。','沉香被誉为"众香之首"，这款手串选用上等沉水级原料，珠子温润如玉，纹理天成。每一串都是独一无二的时间沉淀，值得珍藏。'],originDesc:['核心产区所产沉香以香气醇厚、层次丰富著称。这里的沉香需要数十年甚至上百年才能形成，稀缺性极高。','深海林沉香生长在原始热带雨林中，需受伤后才能结香，每一块都是自然的馈赠。我们的原料均来自可持续采香渠道，品质有保障。'],design:['设计遵循"大道至简"理念，珠子颗颗精挑细选，色泽纹理协调统一。搭配简约银饰，突显沉香本身的韵味，适合多种场合佩戴。','手工打磨抛光，保留沉香天然质感。珠径精心挑选，佩戴服帖舒适。既可作为日常配饰，也可作为收藏传承。']};const randomPick=arr=>arr[Math.floor(Math.random()*arr.length)];document.querySelector('[name="intro"]').value=randomPick(templates.intro);document.querySelector('[name="originDesc"]').value=randomPick(templates.originDesc);document.querySelector('[name="design"]').value=randomPick(templates.design);showToast('AI 文案已生成，可自行修改','success')}
+    function showToast(msg,type=''){const toast=document.getElementById('toast');toast.textContent=msg;toast.className='toast show '+(type?' '+type:'');setTimeout(()=>toast.classList.remove('show'),3000)}
+    function showErrorModal(title,msg){document.getElementById('errorTitle').textContent=title;document.getElementById('errorMessage').textContent=msg;document.getElementById('errorModal').classList.add('show')}function closeErrorModal(){document.getElementById('errorModal').classList.remove('show')}
+    function showExportMask(show){document.getElementById('exportMask').classList.toggle('show',show)}function setExportMsg(msg){document.getElementById('exportMsg').textContent=msg}function setExportBar(pct){document.getElementById('exportBar').style.width=pct+'%'}function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+    function str(v, def='') { return (v == null ? def : String(v)); }
+    function truncateText(text,maxLen){if(!text)return'';text=String(text);return text.length>maxLen?text.substring(0,maxLen)+'...':text}
+    function createProductSlide(pptx,p,imgDataURL){const slide=pptx.addSlide(),slideW=10,slideH=5.625,headerH=0.6,priceH=0.7,footerH=0.4;
+      slide.addShape('rect',{x:0,y:0,w:slideW,h:slideH,fill:{color:'FFFFFF'}});
+      slide.addShape('rect',{x:0,y:0,w:slideW,h:headerH,fill:{color:'1A1A1A'}});
+      slide.addText(str(p.prefix)+str(p.name),{x:0.3,y:0,w:slideW-1.2,h:headerH,fontSize:20,bold:true,color:'FFFFFF',valign:'middle',margin:0});
+      slide.addText('直播专享',{x:slideW-1,y:0.15,w:0.8,h:0.3,fontSize:10,color:'FFFFFF',fill:{color:'E53935'},align:'center',valign:'middle'});
+      const priceY=headerH,priceW=slideW/3;
+      slide.addShape('rect',{x:0,y:priceY,w:slideW,h:priceH,fill:{color:'2A2A2A'}});
+      [{label:'日常价',value:'¥'+str(p.dailyPrice,'—'),color:'C4956A'},{label:'库 存',value:str(p.stock,0)+' 件',color:'4CAF50'},{label:'直播价',value:'¥'+str(p.livePrice,'—'),color:'C4956A'}].forEach((item,i)=>{
+        slide.addText(str(item.label),{x:i*priceW,y:priceY+0.08,w:priceW,h:0.2,fontSize:10,color:'999999',align:'center',margin:0});
+        slide.addText(str(item.value),{x:i*priceW,y:priceY+0.3,w:priceW,h:0.35,fontSize:18,bold:true,color:item.color,align:'center',margin:0})
+      });
+      const contentY=headerH+priceH,contentH=slideH-headerH-priceH-footerH,leftW=5.5,rightX=6.0;
+      let curY=contentY+0.15;
+      if(p.intro){slide.addText('产品介绍',{x:0.3,y:curY,w:leftW,h:0.2,fontSize:9,color:'888888',margin:0});curY+=0.22;slide.addText(truncateText(p.intro,120),{x:0.3,y:curY,w:leftW,h:0.9,fontSize:10,color:'333333',margin:0});curY+=0.95}
+      if(p.originDesc){slide.addText('产地介绍',{x:0.3,y:curY,w:leftW,h:0.2,fontSize:9,color:'888888',margin:0});curY+=0.22;slide.addText(truncateText(p.originDesc,120),{x:0.3,y:curY,w:leftW,h:0.7,fontSize:10,color:'333333',margin:0});curY+=0.75}
+      if(p.design){slide.addText('设计诠释',{x:0.3,y:curY,w:leftW,h:0.2,fontSize:9,color:'888888',margin:0});curY+=0.22;slide.addText(truncateText(p.design,120),{x:0.3,y:curY,w:leftW,h:0.7,fontSize:10,color:'333333',margin:0})}
+      if(!p.intro&&!p.originDesc&&!p.design){slide.addText('暂无文案内容',{x:0.3,y:contentY+0.5,w:leftW,h:0.3,fontSize:10,color:'CCCCCC',align:'center'})}
+      slide.addShape('rect',{x:rightX-0.15,y:contentY,w:slideW-rightX+0.15,h:contentH,fill:{color:'F9F5F1'}});
+      let specY=contentY+0.1;
+      [['产地',p.origin],['尺寸',p.size],['手围',p.length],['材质',p.material]].forEach(([label,val])=>{if(!val)return;slide.addText(str(label)+'：',{x:rightX,y:specY,w:0.7,h:0.18,fontSize:9,color:'888888',margin:0});slide.addText(truncateText(val,12),{x:rightX+0.7,y:specY,w:3.2,h:0.18,fontSize:9,bold:true,color:'222222',margin:0});specY+=0.22});
+      if(p.id){slide.addText('编号：'+str(p.id),{x:rightX,y:specY+0.1,w:3.5,h:0.15,fontSize:8,color:'BBBBBB',margin:0})}
+      const imgY=specY+0.35,imgH=contentH-(imgY-contentY)-0.1;
+      try{if(imgDataURL&&typeof imgDataURL==='string'&&imgDataURL.startsWith('data:image')){slide.addImage({data:imgDataURL,x:rightX,y:imgY,w:3.8,h:imgH})}else{slide.addText('暂无图片',{x:rightX,y:imgY,w:3.8,h:imgH,fontSize:12,color:'CCCCCC',align:'center',valign:'middle'})}}catch(e){console.warn('图片添加失败:',e);slide.addText('暂无图片',{x:rightX,y:imgY,w:3.8,h:imgH,fontSize:12,color:'CCCCCC',align:'center',valign:'middle'})}
+      const footerY=slideH-footerH;
+      slide.addShape('rect',{x:0,y:footerY,w:slideW,h:footerH,fill:{color:'F4F0EB'}});
+      slide.addText('📦 '+str(p.logistics,'顺丰包邮 | 附鉴定证书 | 7天无理由'),{x:0.2,y:footerY,w:6.5,h:footerH,fontSize:8,color:'666666',valign:'middle',margin:0});
+      slide.addText('景心如意 JXRY',{x:7,y:footerY,w:2.8,h:footerH,fontSize:8,bold:true,color:'C4956A',align:'right',valign:'middle',margin:0})}
+    async function exportSinglePPT(){if(!currentPreviewId)return;const p=products.find(x=>x.id===currentPreviewId);if(!p)return;await doExportPPT([p])}
+    async function batchExportPPT(){if(selectedIds.size===0){showErrorModal('请选择产品','请先在产品库中选择要导出的产品');return}const list=products.filter(x=>selectedIds.has(x.id));await doExportPPT(list)}
+    async function doExportPPT(productList){try{
+      // 检查库加载状态
+      const PptxGen = PptxGenJS;
+      if(!PptxGen){
+        var diag = 'PPT 生成库未加载。\n\n诊断信息：\n';
+        diag += '- PptxGenJS: ' + (typeof PptxGenJS) + '\n';
+        diag += '\n请打开浏览器控制台 (F12) 查看详细日志，刷新页面后重试。';
+        throw new Error(diag);
+      }showExportMask(true);setExportMsg('正在生成 PPT...');setExportBar(10);const pptx=new PptxGen();pptx.layout='LAYOUT_16x9';pptx.title='景心如意产品手卡';pptx.author='景心如意';for(let i=0;i<productList.length;i++){const p=productList[i];setExportMsg('正在生成 '+(i+1)+'/'+productList.length+'：'+p.name);setExportBar(10+Math.round((i/productList.length)*80));const imgList=images[p.id]||[];createProductSlide(pptx,p,imgList[0]||null);await delay(50)}setExportBar(95);setExportMsg('正在打包...');const fileName=productList.length===1?'手卡_'+productList[0].id+'_'+new Date().toISOString().slice(0,10)+'.pptx':'景心如意手卡_'+productList.length+'件_'+new Date().toISOString().slice(0,10)+'.pptx';const arrayBuffer=await pptx.write('arraybuffer');const blob=new Blob([arrayBuffer],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=fileName;link.type='application/vnd.openxmlformats-officedocument.presentationml.presentation';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);setExportBar(100);setExportMsg('✅ 导出成功！');await delay(800);showExportMask(false);cancelSelectMode();showToast('已导出 '+productList.length+' 张手卡到 PPT','success')}catch(e){showExportMask(false);console.error('导出失败:',e);showErrorModal('导出失败','错误信息：'+(e.message||'未知错误')+'\n\n建议：\n1. 刷新页面后重试\n2. 检查网络连接\n3. 尝试减少导出数量')}}
+    document.addEventListener('DOMContentLoaded',()=>{renderProducts();console.log('✅ 景心如意产品手卡系统已加载');console.log('📦 产品数量:',products.length)});
+  </script>
+</body>
+</html>
