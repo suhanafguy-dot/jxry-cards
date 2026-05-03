@@ -5,32 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>景心如意 · 产品手卡管理系统</title>
   <style>
-    :root{--gold:#C4956A;--gold-light:#E8D5B7;--dark:#1a1a1a;--bg:#F9F5F1;--card-bg:#FFFFFF;--text:#333;--text-light:#888;--border:#E5DDD5;--success:#4CAF50;--danger:#E53935}
+    :root{--gold:#C4956A;--gold-light:#E8D5B7;--dark:#1a1a1a;--bg:#F9F5F1;--card-bg:#FFFFFF;--text:#333;--text-light:#888;--border:#E5DDD5;--success:#4CAF50;--danger:#E53935;--purple:#667eea}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
     .header{background:var(--dark);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
     .header h1{font-size:18px;font-weight:600}
     .header h1 span{color:var(--gold)}
     .main{max-width:1400px;margin:0 auto;padding:24px}
-    .tabs{display:flex;gap:8px;margin-bottom:24px}
+    .tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
     .tab{padding:10px 24px;border:none;background:#fff;border-radius:8px;cursor:pointer;font-size:14px}
     .tab:hover{background:var(--gold-light)}
     .tab.active{background:var(--gold);color:#fff}
-    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;fontSize:14px}
     .btn-primary{background:var(--gold);color:#fff}
     .btn-primary:hover{background:#b3845a}
     .btn-secondary{background:#fff;border:1px solid var(--border)}
     .btn-danger{background:var(--danger);color:#fff}
     .btn-sm{padding:6px 12px;font-size:12px}
+    .btn-purple{background:var(--purple);color:#fff}
     .search-bar{display:flex;gap:12px;margin-bottom:20px}
     .search-bar input{flex:1;padding:10px 16px;border:1px solid var(--border);border-radius:8px;font-size:14px}
     .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
-    .product-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .2s;cursor:pointer;position:relative}
-    .product-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .kol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+    .product-card,.kol-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .2s;cursor:pointer;position:relative}
+    .product-card:hover,.kol-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
     .product-card.selected{outline:3px solid var(--gold)}
-    .product-card img{width:100%;height:200px;object-fit:cover;background:var(--bg)}
-    .product-card .info{padding:16px}
-    .product-card .name{font-size:16px;font-weight:600;margin-bottom:8px}
+    .product-card img,.kol-card .kol-avatar{width:100%;height:200px;object-fit:cover;background:var(--bg)}
+    .kol-card .kol-avatar{height:120px;display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,var(--gold) 0%,var(--purple) 100%);color:#fff}
+    .product-card .info,.kol-card .info{padding:16px}
+    .product-card .name,.kol-card .name{font-size:16px;font-weight:600;margin-bottom:8px}
+    .kol-card .desc{font-size:13px;color:var(--text-light);margin-bottom:12px}
+    .kol-card .tpl-count{font-size:12px;color:var(--purple);margin-bottom:12px}
+    .kol-card .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .kol-card .actions .btn{font-size:12px;padding:6px 12px}
     .product-card .meta{font-size:12px;color:var(--text-light);display:flex;gap:12px}
     .product-card .price{font-size:18px;color:var(--gold);font-weight:600;margin-top:8px}
     .product-card .checkbox{position:absolute;top:12px;right:12px;width:24px;height:24px;background:#fff;border:2px solid var(--border);border-radius:50%;display:none;align-items:center;justify-content:center}
@@ -56,6 +63,52 @@
     .preview-content{background:#fff;border-radius:16px;width:960px;max-height:90vh;overflow:auto}
     .preview-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
     .preview-actions{display:flex;gap:12px}
+    .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:2000}
+    .modal.show{display:flex}
+    .modal-content{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto}
+    .modal h3{font-size:18px;margin-bottom:16px}
+    .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+    .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999}
+    .modal-close:hover{color:#333}
+    .error-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:3000}
+    .error-modal.show{display:flex}
+    .error-content{background:#fff;border-radius:16px;padding:32px;width:90%;max-width:450px;text-align:center}
+    .error-icon{font-size:48px;margin-bottom:16px}
+    .error-title{font-size:18px;font-weight:600;margin-bottom:12px;color:var(--danger)}
+    .error-message{font-size:14px;color:var(--text-light);line-height:1.6;margin-bottom:20px;white-space:pre-wrap;text-align:left;background:#f5f5f5;padding:16px;border-radius:8px;max-height:200px;overflow-y:auto}
+    .export-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:2500;flex-direction:column;color:#fff}
+    .export-mask.show{display:flex}
+    .export-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .export-msg{font-size:16px;margin-bottom:16px}
+    .export-bar{width:300px;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
+    .export-bar-fill{height:100%;background:var(--gold);transition:width .3s}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark);color:#fff;padding:14px 28px;border-radius:8px;font-size:14px;transition:transform .3s;z-index:4000}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.success{background:var(--success)}
+    .multi-select-bar{background:var(--gold);color:#fff;padding:12px 24px;display:none;align-items:center;justify-content:space-between;border-radius:12px;margin-bottom:20px}
+    .multi-select-bar.show{display:flex}
+    .multi-select-bar .count{font-size:14px}
+    .multi-select-bar .actions{display:flex;gap:12px}
+    .multi-select-bar select{padding:8px 12px;border:none;border-radius:6px;font-size:14px}
+    .id-hint{font-size:12px;margin-top:4px}
+    .id-hint.valid{color:var(--success)}
+    .id-hint.invalid{color:var(--danger)}
+    .hidden{display:none!important}
+    .template-list{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+    .template-item{background:#f9f9f9;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+    .template-item .tpl-info{flex:1}
+    .template-item .tpl-name{font-weight:600;margin-bottom:4px}
+    .template-item .tpl-meta{font-size:12px;color:var(--text-light)}
+    .template-item .tpl-actions{display:flex;gap:8px}
+    .field-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .field-tag{background:var(--gold-light);color:var(--dark);padding:4px 10px;border-radius:12px;font-size:11px}
+    .export-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    .export-option{background:#fff;border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s}
+    .export-option:hover{border-color:var(--gold)}
+    .export-option.selected{border-color:var(--gold);background:rgba(196,149,106,.1)}
+    .export-option h4{margin-bottom:8px}
+    .export-option p{font-size:13px;color:var(--text-light)}
     .card-preview{width:960px;min-height:540px;background:#fff;font-family:'Microsoft YaHei',sans-serif;overflow:hidden}
     .card-header{background:var(--dark);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;min-height:64px}
     .card-header h2{font-size:20px}
@@ -80,57 +133,91 @@
     .card-image img{max-width:100%;max-height:100%;object-fit:contain}
     .card-footer{background:var(--bg);padding:10px 24px;display:flex;justify-content:space-between;font-size:12px;color:var(--text-light);min-height:40px;align-items:center}
     .card-footer .brand{color:var(--gold);font-weight:600}
-    .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:2000}
-    .modal.show{display:flex}
-    .modal-content{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:500px}
-    .modal h3{font-size:18px;margin-bottom:16px}
-    .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
-    .error-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:3000}
-    .error-modal.show{display:flex}
-    .error-content{background:#fff;border-radius:16px;padding:32px;width:90%;max-width:450px;text-align:center}
-    .error-icon{font-size:48px;margin-bottom:16px}
-    .error-title{font-size:18px;font-weight:600;margin-bottom:12px;color:var(--danger)}
-    .error-message{font-size:14px;color:var(--text-light);line-height:1.6;margin-bottom:20px;white-space:pre-wrap;text-align:left;background:#f5f5f5;padding:16px;border-radius:8px;max-height:200px;overflow-y:auto}
-    .export-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:2500;flex-direction:column;color:#fff}
-    .export-mask.show{display:flex}
-    .export-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .export-msg{font-size:16px;margin-bottom:16px}
-    .export-bar{width:300px;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
-    .export-bar-fill{height:100%;background:var(--gold);transition:width .3s}
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark);color:#fff;padding:14px 28px;border-radius:8px;font-size:14px;transition:transform .3s;z-index:4000}
-    .toast.show{transform:translateX(-50%) translateY(0)}
-    .toast.success{background:var(--success)}
-    .multi-select-bar{background:var(--gold);color:#fff;padding:12px 24px;display:none;align-items:center;justify-content:space-between;border-radius:12px;margin-bottom:20px}
-    .multi-select-bar.show{display:flex}
-    .multi-select-bar .count{font-size:14px}
-    .multi-select-bar .actions{display:flex;gap:12px}
-    .id-hint{font-size:12px;margin-top:4px}
-    .id-hint.valid{color:var(--success)}
-    .id-hint.invalid{color:var(--danger)}
-    .hidden{display:none!important}
+    .kol-detail-header{display:flex;align-items:center;gap:20px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+    .kol-detail-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--gold) 0%,var(--purple) 100%);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff}
+    .kol-detail-info{flex:1}
+    .kol-detail-info h2{font-size:24px;margin-bottom:8px}
+    .kol-detail-info p{color:var(--text-light)}
+    /* ===== 批量导入 ===== */
+    .import-steps{display:flex;gap:0;margin-bottom:32px;position:relative}
+    .import-steps::before{content:'';position:absolute;top:20px;left:20px;right:20px;height:2px;background:var(--border);z-index:0}
+    .import-step{flex:1;text-align:center;position:relative;z-index:1}
+    .import-step .step-num{width:40px;height:40px;border-radius:50%;background:var(--border);color:#999;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;margin-bottom:8px;transition:all .3s}
+    .import-step .step-label{font-size:12px;color:var(--text-light)}
+    .import-step.active .step-num{background:var(--gold);color:#fff}
+    .import-step.done .step-num{background:var(--success);color:#fff}
+    .import-step.active .step-label{color:var(--gold);font-weight:600}
+    .import-panel{background:#fff;border-radius:16px;padding:32px;margin-bottom:24px}
+    .import-panel h3{font-size:18px;margin-bottom:8px}
+    .import-panel .sub{font-size:13px;color:var(--text-light);margin-bottom:24px}
+    .kol-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+    .kol-select-card{border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;text-align:center}
+    .kol-select-card:hover{border-color:var(--gold)}
+    .kol-select-card.selected{border-color:var(--gold);background:rgba(196,149,106,.08)}
+    .kol-select-card .avatar{font-size:32px;margin-bottom:8px}
+    .kol-select-card .kname{font-weight:600;font-size:14px}
+    .kol-select-card .ktpl{font-size:12px;color:var(--text-light);margin-top:4px}
+    .tpl-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px}
+    .tpl-select-card{border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s}
+    .tpl-select-card:hover{border-color:var(--gold)}
+    .tpl-select-card.selected{border-color:var(--gold);background:rgba(196,149,106,.08)}
+    .tpl-select-card .tname{font-weight:600;font-size:14px;margin-bottom:6px}
+    .tpl-select-card .tmeta{font-size:12px;color:var(--text-light)}
+    .excel-upload-area{border:2px dashed var(--border);border-radius:16px;padding:48px;text-align:center;cursor:pointer;transition:all .3s}
+    .excel-upload-area:hover,.excel-upload-area.dragover{border-color:var(--gold);background:rgba(196,149,106,.05)}
+    .excel-upload-area .upload-icon{font-size:48px;margin-bottom:16px}
+    .excel-upload-area h4{font-size:16px;margin-bottom:8px}
+    .excel-upload-area p{font-size:13px;color:var(--text-light)}
+    .excel-preview-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px;overflow:hidden;border-radius:8px}
+    .excel-preview-table th{background:var(--dark);color:#fff;padding:10px 12px;text-align:left;font-weight:500}
+    .excel-preview-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+    .excel-preview-table tr:last-child td{border-bottom:none}
+    .excel-preview-table tr:nth-child(even) td{background:#fafafa}
+    .match-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:11px}
+    .match-badge.ok{background:#e8f5e9;color:var(--success)}
+    .match-badge.miss{background:#fff3e0;color:#e65100}
+    .import-summary{background:var(--bg);border-radius:12px;padding:20px;margin-bottom:24px}
+    .import-summary .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
+    .import-summary .row:last-child{border-bottom:none}
+    .import-summary .val{font-weight:600;color:var(--gold)}
+    .import-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+    .template-hint{background:linear-gradient(135deg,rgba(196,149,106,.1),rgba(102,126,234,.1));border:1px solid var(--gold-light);border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px}
+    .template-hint strong{display:block;margin-bottom:6px}
+    .template-hint code{background:#fff;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px}
   </style>
 </head>
 <body>
   <header class="header">
     <h1>景心如意 <span>·</span> 产品手卡管理系统</h1>
     <div class="header-actions">
-      <button class="btn btn-secondary" onclick="enterSelectMode()">多选导出</button>
+      <button class="btn btn-secondary" onclick="enterSelectMode()">📤 批量导出</button>
       <button class="btn btn-primary" onclick="switchView('new')">+ 新建手卡</button>
     </div>
   </header>
   <main class="main">
     <div class="tabs" id="tabs">
       <button class="tab active" data-view="library" onclick="switchView('library')">📦 产品库</button>
+      <button class="tab" data-view="kols" onclick="switchView('kols')">🎯 达人管理</button>
+      <button class="tab" data-view="import" onclick="switchView('import')">📊 批量导入</button>
       <button class="tab" data-view="new" onclick="switchView('new')">✏️ 新建手卡</button>
     </div>
+
+    <!-- 批量导出栏 -->
     <div class="multi-select-bar" id="multiSelectBar">
       <div class="count">已选择 <strong id="selectedCount">0</strong> 个产品</div>
       <div class="actions">
+        <select id="kolSelect" onchange="updateKolSelect()">
+          <option value="">选择达人（可选）</option>
+        </select>
+        <select id="templateSelect" style="display:none;">
+          <option value="">选择模板（可选）</option>
+        </select>
         <button class="btn btn-sm btn-secondary" onclick="cancelSelectMode()">取消</button>
-        <button class="btn btn-sm btn-primary" onclick="batchExportPPT()">📥 批量导出 PPT</button>
+        <button class="btn btn-sm btn-primary" onclick="batchExportPPT()">📥 导出 PPT</button>
       </div>
     </div>
+
+    <!-- 产品库视图 -->
     <div id="libraryView">
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="搜索产品名称或编号..." oninput="filterProducts()">
@@ -146,6 +233,96 @@
         <p>点击右上角「新建手卡」开始添加</p>
       </div>
     </div>
+
+    <!-- 达人管理视图 -->
+    <div id="kolsView" class="hidden">
+      <div class="search-bar">
+        <button class="btn btn-primary" onclick="showAddKolModal()">+ 添加达人</button>
+      </div>
+      <div class="kol-grid" id="kolGrid"></div>
+      <div class="empty-state" id="kolEmptyState" style="display:none;">
+        <h3>暂无达人</h3>
+        <p>点击「添加达人」开始管理达人模板</p>
+      </div>
+    </div>
+
+    <!-- 批量导入视图 -->
+    <div id="importView" class="hidden">
+      <div class="import-steps">
+        <div class="import-step active" id="istep1"><div class="step-num">1</div><div class="step-label">选择达人</div></div>
+        <div class="import-step" id="istep2"><div class="step-num">2</div><div class="step-label">选择模板</div></div>
+        <div class="import-step" id="istep3"><div class="step-num">3</div><div class="step-label">上传 Excel</div></div>
+        <div class="import-step" id="istep4"><div class="step-num">4</div><div class="step-label">预览确认</div></div>
+      </div>
+      <!-- Step 1：选择达人 -->
+      <div class="import-panel" id="importStep1">
+        <h3>第一步：选择达人</h3>
+        <p class="sub">选择此次批量导入对应的达人，系统将使用该达人的 PPT 模板生成手卡</p>
+        <div class="kol-select-grid" id="importKolGrid"></div>
+        <div class="empty-state" id="importKolEmpty" style="display:none;">
+          <h3>暂无达人</h3><p>请先前往「达人管理」添加达人并上传模板</p>
+          <button class="btn btn-primary" style="margin-top:16px" onclick="switchView('kols')">前往达人管理</button>
+        </div>
+        <div class="import-nav">
+          <span></span>
+          <button class="btn btn-primary" id="importStep1Next" onclick="importGoStep2()" disabled>下一步：选择模板 →</button>
+        </div>
+      </div>
+      <!-- Step 2：选择模板 -->
+      <div class="import-panel hidden" id="importStep2">
+        <h3>第二步：选择模板</h3>
+        <p class="sub" id="importStep2Sub">请选择要使用的 PPT 模板</p>
+        <div class="template-hint"><strong>💡 占位符说明</strong>在 PPT 模板中使用 <code>{{字段名}}</code> 格式的占位符，系统将自动替换为 Excel 对应列的数据。</div>
+        <div class="tpl-select-grid" id="importTplGrid"></div>
+        <div class="import-nav">
+          <button class="btn btn-secondary" onclick="importGoStep(1)">← 上一步</button>
+          <button class="btn btn-primary" id="importStep2Next" onclick="importGoStep3()" disabled>下一步：上传 Excel →</button>
+        </div>
+      </div>
+      <!-- Step 3：上传 Excel -->
+      <div class="import-panel hidden" id="importStep3">
+        <h3>第三步：上传 Excel 数据</h3>
+        <p class="sub">每行对应一页 PPT，第一行为中文表头，系统自动匹配字段</p>
+        <div class="template-hint"><strong>📋 支持的中文列名</strong>产品名称、日常价、直播价、库存、产地、尺寸、手围、材质、产品介绍、产地介绍、设计诠释、物流信息、产品编号、达人前缀</div>
+        <div class="template-hint" style="background:#e8f5e9;border-color:#81c784"><strong>🖼️ Excel 内嵌图片支持</strong>如果 Excel 中有单元格内嵌图片，系统会自动提取并关联到对应行的产品，导出 PPT 时直接嵌入，无需额外上传。</div>
+        <div class="excel-upload-area" id="excelDropZone" onclick="document.getElementById('excelFileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleExcelDrop(event)">
+          <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelFile(event)">
+          <div class="upload-icon">📊</div>
+          <h4>点击上传 或 拖拽 Excel 文件到此处</h4>
+          <p>支持 .xlsx / .xls / .csv 格式</p>
+        </div>
+        <div id="excelPreviewArea" style="display:none;margin-top:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <strong id="excelPreviewTitle"></strong>
+            <span>
+              <button class="btn btn-sm btn-purple" id="importAIBtn" onclick="generateImportAI()" style="margin-right:8px;">🤖 AI 生成文案</button>
+              <button class="btn btn-sm btn-secondary" onclick="resetExcelUpload()">重新上传</button>
+            </span>
+          </div>
+          <div style="overflow-x:auto;"><table class="excel-preview-table" id="excelPreviewTable"></table></div>
+        </div>
+        <div class="import-nav" style="margin-top:24px">
+          <button class="btn btn-secondary" onclick="importGoStep(2)">← 上一步</button>
+          <button class="btn btn-primary" id="importStep3Next" onclick="importGoStep4()" disabled>下一步：预览确认 →</button>
+        </div>
+      </div>
+      <!-- Step 4：预览确认 -->
+      <div class="import-panel hidden" id="importStep4">
+        <h3>第四步：确认生成</h3>
+        <p class="sub">请确认以下信息无误，点击「生成 PPT」开始批量导出</p>
+        <div class="import-summary" id="importSummary"></div>
+        <div style="overflow-x:auto;margin-bottom:20px;"><table class="excel-preview-table" id="importConfirmTable"></table></div>
+        <div class="import-nav">
+          <button class="btn btn-secondary" onclick="importGoStep(3)">← 上一步</button>
+          <button class="btn btn-primary" onclick="doImportExportPPT()">🚀 生成 PPT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新建手卡视图 -->
     <div id="newView" class="hidden">
       <form id="productForm" onsubmit="saveProduct(event)">
         <div class="form-section">
@@ -242,29 +419,106 @@
       </form>
     </div>
   </main>
+
+  <!-- 手卡预览弹窗 -->
   <div class="preview-area" id="previewArea">
     <div class="preview-content">
       <div class="preview-header">
         <h3>手卡预览</h3>
         <div class="preview-actions">
+          <select id="previewKolSelect" onchange="updatePreviewTemplate()">
+            <option value="">默认模板</option>
+          </select>
           <button class="btn btn-secondary" onclick="editFromPreview()">✏️ 编辑</button>
-          <button class="btn btn-primary" onclick="exportSinglePPT()">📥 导出 PPT</button>
+          <button class="btn btn-primary" onclick="exportFromPreview()">📥 导出 PPT</button>
           <button class="btn btn-secondary" onclick="closePreview()">关闭</button>
         </div>
       </div>
       <div id="previewContent"></div>
     </div>
   </div>
+
+  <!-- 达人详情弹窗 -->
+  <div class="modal" id="kolDetailModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeKolDetail()">×</button>
+      <div id="kolDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- 添加/编辑达人弹窗 -->
+  <div class="modal" id="kolModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeKolModal()">×</button>
+      <h3 id="kolModalTitle">添加达人</h3>
+      <form id="kolForm" onsubmit="saveKol(event)">
+        <input type="hidden" id="kolEditId">
+        <div class="form-group">
+          <label>达人名称 *</label>
+          <input type="text" id="kolName" required placeholder="如：薛佳凝">
+        </div>
+        <div class="form-group">
+          <label>达人简介</label>
+          <input type="text" id="kolDesc" placeholder="如：带发修行·禅意旅行者">
+        </div>
+        <div class="form-group">
+          <label>头像 emoji（选填）</label>
+          <input type="text" id="kolEmoji" placeholder="如：🧘‍♀️">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeKolModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 上传模板弹窗 -->
+  <div class="modal" id="templateModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeTemplateModal()">×</button>
+      <h3>上传 PPT 模板</h3>
+      <p style="color:var(--text-light);margin-bottom:16px;font-size:13px;">
+        请上传包含占位符的 PPTX 文件，占位符格式：<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">{{字段名}}</code>
+      </p>
+      <p style="color:var(--text-light);margin-bottom:16px;font-size:13px;">
+        支持字段：name, dailyPrice, livePrice, stock, origin, size, length, material, intro, originDesc, design, logistics, id
+      </p>
+      <div class="form-group">
+        <label>模板名称</label>
+        <input type="text" id="tplName" placeholder="如：薛佳凝专属模板">
+      </div>
+      <div class="form-group">
+        <label>选择 PPTX 文件</label>
+        <div class="image-upload" onclick="document.getElementById('tplFileInput').click()" style="padding:20px;">
+          <input type="file" id="tplFileInput" accept=".pptx" onchange="handleTplFileSelect(event)" style="display:block;">
+          <p id="tplFileName">点击选择 PPTX 文件</p>
+        </div>
+      </div>
+      <div id="tplFieldsPreview" style="display:none;">
+        <h4 style="margin:16px 0 8px;">识别到的占位符：</h4>
+        <div class="field-tags" id="tplFieldsTags"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeTemplateModal()">取消</button>
+        <button type="button" class="btn btn-primary" id="uploadTplBtn" onclick="uploadTemplate()" disabled>上传模板</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
   <div class="modal" id="deleteModal">
     <div class="modal-content">
       <h3>确认删除</h3>
-      <p>确定要删除这个产品吗？此操作无法撤销。</p>
+      <p id="deleteMsg">确定要删除吗？此操作无法撤销。</p>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
         <button class="btn btn-danger" onclick="confirmDelete()">删除</button>
       </div>
     </div>
   </div>
+
+  <!-- 错误提示弹窗 -->
   <div class="error-modal" id="errorModal">
     <div class="error-content">
       <div class="error-icon">⚠️</div>
@@ -273,91 +527,1864 @@
       <button class="btn btn-primary" onclick="closeErrorModal()">知道了</button>
     </div>
   </div>
+
+  <!-- 导出进度弹窗 -->
   <div class="export-mask" id="exportMask">
     <div class="export-spinner"></div>
     <div class="export-msg" id="exportMsg">正在导出...</div>
     <div class="export-bar"><div class="export-bar-fill" id="exportBar" style="width:0%"></div></div>
   </div>
+
+  <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+
+  <script src="jszip.min.js"></script>
+  <script src="pptxgen.full.bundle.js"></script>
+  <script src="xlsx.full.min.js"></script>
+  <script src="config.js"></script>
   <script>
-    // 诊断代码 - 检查库是否正确加载
-    (function(){
-      var hasJSZip = typeof JSZip !== 'undefined';
-      var hasPptxGenJS = typeof PptxGenJS !== 'undefined';
-      console.log('📦 pptxgen 诊断:');
-      console.log('  - JSZip:', hasJSZip ? '✓ 存在' : '✗ 不存在');
-      console.log('  - PptxGenJS:', hasPptxGenJS ? '✓ 存在' : '✗ 不存在');
-      if (!hasJSZip || !hasPptxGenJS) {
-        console.warn('⚠️ pptxgen 库未正确加载，请检查控制台 (F12) 或刷新页面');
-      } else {
-        console.log('✅ pptxgen 库加载成功');
-      }
-    })();
-    
-    let products=JSON.parse(localStorage.getItem('jxry_products')||'[]'),images=JSON.parse(localStorage.getItem('jxry_images')||'{}'),editingId=null,currentPreviewId=null,selectMode=false,selectedIds=new Set(),pendingImages=[];
-    function saveData(){localStorage.setItem('jxry_products',JSON.stringify(products));localStorage.setItem('jxry_images',JSON.stringify(images))}
-    function switchView(name){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelector('.tab[data-view="'+name+'"]')?.classList.add('active');document.getElementById('libraryView').classList.toggle('hidden',name!=='library');document.getElementById('newView').classList.toggle('hidden',name!=='new');if(name==='library')renderProducts()}
-    function renderProducts(){const grid=document.getElementById('productGrid'),empty=document.getElementById('emptyState'),search=document.getElementById('searchInput').value.toLowerCase(),filter=document.getElementById('filterSelect').value;let filtered=products.filter(p=>{const matchSearch=!search||(p.name||'').toLowerCase().includes(search)||(p.id||'').toLowerCase().includes(search);const stock=parseInt(p.stock)||0,matchFilter=!filter||(filter==='in_stock'&&stock>0)||(filter==='out_of_stock'&&stock===0);return matchSearch&&matchFilter});if(filtered.length===0){grid.innerHTML='';empty.style.display='block';return}empty.style.display='none';grid.innerHTML=filtered.map(p=>{const imgList=images[p.id]||[],mainImg=imgList[0]||'',isSelected=selectedIds.has(p.id);return'<div class="product-card '+(isSelected?'selected':'')+'" onclick="handleCardClick(event,\''+p.id+'\')"><div class="checkbox">✓</div>'+(mainImg?'<img src="'+mainImg+'" alt="'+p.name+'">':'<div style="height:200px;background:#f0ebe6;display:flex;align-items:center;justify-content:center;color:#999;">暂无图片</div>')+'<div class="info"><div class="name">'+(p.prefix||'')+p.name+'</div><div class="meta"><span>📦 '+(p.stock||0)+'件</span><span>📍 '+(p.origin||'-')+'</span></div><div class="price">¥'+(p.livePrice||p.dailyPrice||'—')+'</div></div></div>'}).join('')}
-    function filterProducts(){renderProducts()}
-    function enterSelectMode(){selectMode=true;selectedIds.clear();document.getElementById('multiSelectBar').classList.add('show');renderProducts()}
-    function cancelSelectMode(){selectMode=false;selectedIds.clear();document.getElementById('multiSelectBar').classList.remove('show');renderProducts()}
-    function handleCardClick(e,id){e.stopPropagation();if(!selectMode){showPreview(id);return}if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);document.getElementById('selectedCount').textContent=selectedIds.size;renderProducts()}
-    function handleImageUpload(e){const files=Array.from(e.target.files);files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{pendingImages.push(ev.target.result);renderImagePreview()};reader.readAsDataURL(file)});e.target.value=''}
-    function renderImagePreview(){const container=document.getElementById('imagePreview'),existing=editingId?(images[editingId]||[]).length:0;container.innerHTML=(editingId?[...(images[editingId]||[]),...pendingImages]:pendingImages).map((src,i)=>'<div class="img-item"><img src="'+src+'" alt="图片'+(i+1)+'"><button class="remove" onclick="removeImage('+i+')">×</button></div>').join('')}
-    function removeImage(index){const existing=editingId?(images[editingId]||[]).length:0;if(index<existing){if(editingId)images[editingId].splice(index,1)}else{pendingImages.splice(index-existing,1)}renderImagePreview()}
-    function checkProductId(){const input=document.getElementById('productIdInput'),hint=document.getElementById('idHint'),val=input.value.trim();if(!val){hint.textContent='';return}const exists=products.some(p=>p.id===val&&p.id!==editingId);if(exists){hint.textContent='❌ 编号已存在';hint.className='id-hint invalid';input.setCustomValidity('编号已存在')}else{hint.textContent='✓ 可用';hint.className='id-hint valid';input.setCustomValidity('')}}
-    function saveProduct(e){e.preventDefault();const form=e.target,formData=new FormData(form),data=Object.fromEntries(formData.entries());const exists=products.some(p=>p.id===data.id&&p.id!==editingId);if(exists){showErrorModal('保存失败','产品编号已存在，请使用其他编号');return}if(editingId){images[editingId]=[...(images[editingId]||[]),...pendingImages].slice(0,5)}else{images[data.id]=pendingImages.slice(0,5)}if(editingId){const idx=products.findIndex(p=>p.id===editingId);if(idx!==-1)products[idx]={...products[idx],...data}}else{products.push(data)}saveData();pendingImages=[];editingId=null;document.getElementById('productForm').reset();document.getElementById('imagePreview').innerHTML='';showToast('保存成功！','success');switchView('library')}
-    function showPreview(id){currentPreviewId=id;const p=products.find(x=>x.id===id);if(!p)return;const imgList=images[id]||[],mainImg=imgList[0]||'';document.getElementById('previewContent').innerHTML='<div class="card-preview"><div class="card-header"><h2>'+(p.prefix||'')+p.name+'</h2><span class="live-tag">直播专享</span></div><div class="card-prices"><div class="price-item"><div class="price-label">日常价</div><div class="price-value">¥'+(p.dailyPrice||'—')+'</div></div><div class="price-item"><div class="price-label">库 存</div><div class="price-value stock">'+(p.stock||0)+' 件</div></div><div class="price-item"><div class="price-label">直播价</div><div class="price-value">¥'+(p.livePrice||'—')+'</div></div></div><div class="card-body"><div class="card-left">'+(p.intro?'<div class="card-section"><h4>产品介绍</h4><p>'+p.intro+'</p></div>':'')+(p.originDesc?'<div class="card-section"><h4>产地介绍</h4><p>'+p.originDesc+'</p></div>':'')+(p.design?'<div class="card-section"><h4>设计诠释</h4><p>'+p.design+'</p></div>':'')+'</div><div class="card-right"><div class="card-specs">'+(p.origin?'<div class="card-spec"><span class="label">产地</span><span class="value">'+p.origin+'</span></div>':'')+(p.size?'<div class="card-spec"><span class="label">尺寸</span><span class="value">'+p.size+'</span></div>':'')+(p.length?'<div class="card-spec"><span class="label">手围</span><span class="value">'+p.length+'</span></div>':'')+(p.material?'<div class="card-spec"><span class="label">材质</span><span class="value">'+p.material+'</span></div>':'')+'</div><div class="card-image">'+(mainImg?'<img src="'+mainImg+'" alt="产品图片">':'<span class="placeholder">暂无图片</span>')+'</div></div></div><div class="card-footer"><span>📦 '+(p.logistics||'顺丰包邮 | 附鉴定证书')+'</span><span class="brand">景心如意 JXRY</span></div></div>';document.getElementById('previewArea').classList.add('show')}
-    function closePreview(){document.getElementById('previewArea').classList.remove('show')}
-    function editFromPreview(){if(!currentPreviewId)return;const p=products.find(x=>x.id===currentPreviewId);if(!p)return;editingId=currentPreviewId;pendingImages=[];closePreview();Object.keys(p).forEach(key=>{const input=document.querySelector('[name="'+key+'"]');if(input)input.value=p[key]||''});checkProductId();renderImagePreview();document.getElementById('submitBtn').textContent='更新手卡';switchView('new')}
-    let deleteTargetId=null;function showDeleteModal(id){deleteTargetId=id;document.getElementById('deleteModal').classList.add('show')}function closeDeleteModal(){deleteTargetId=null;document.getElementById('deleteModal').classList.remove('show')}function confirmDelete(){if(!deleteTargetId)return;products=products.filter(p=>p.id!==deleteTargetId);delete images[deleteTargetId];saveData();closeDeleteModal();renderProducts();showToast('已删除','success')}
-    function generateAI(){const templates={intro:['这款沉香手串精选自核心产区，原材历经数十年自然醇化，油脂饱满，香气馥郁。佩戴时香气随体温散发，淡雅而持久，是品香与审美的完美结合。','沉香被誉为"众香之首"，这款手串选用上等沉水级原料，珠子温润如玉，纹理天成。每一串都是独一无二的时间沉淀，值得珍藏。'],originDesc:['核心产区所产沉香以香气醇厚、层次丰富著称。这里的沉香需要数十年甚至上百年才能形成，稀缺性极高。','深海林沉香生长在原始热带雨林中，需受伤后才能结香，每一块都是自然的馈赠。我们的原料均来自可持续采香渠道，品质有保障。'],design:['设计遵循"大道至简"理念，珠子颗颗精挑细选，色泽纹理协调统一。搭配简约银饰，突显沉香本身的韵味，适合多种场合佩戴。','手工打磨抛光，保留沉香天然质感。珠径精心挑选，佩戴服帖舒适。既可作为日常配饰，也可作为收藏传承。']};const randomPick=arr=>arr[Math.floor(Math.random()*arr.length)];document.querySelector('[name="intro"]').value=randomPick(templates.intro);document.querySelector('[name="originDesc"]').value=randomPick(templates.originDesc);document.querySelector('[name="design"]').value=randomPick(templates.design);showToast('AI 文案已生成，可自行修改','success')}
-    function showToast(msg,type=''){const toast=document.getElementById('toast');toast.textContent=msg;toast.className='toast show '+(type?' '+type:'');setTimeout(()=>toast.classList.remove('show'),3000)}
-    function showErrorModal(title,msg){document.getElementById('errorTitle').textContent=title;document.getElementById('errorMessage').textContent=msg;document.getElementById('errorModal').classList.add('show')}function closeErrorModal(){document.getElementById('errorModal').classList.remove('show')}
-    function showExportMask(show){document.getElementById('exportMask').classList.toggle('show',show)}function setExportMsg(msg){document.getElementById('exportMsg').textContent=msg}function setExportBar(pct){document.getElementById('exportBar').style.width=pct+'%'}function delay(ms){return new Promise(r=>setTimeout(r,ms))}
-    function str(v, def='') { return (v == null ? def : String(v)); }
-    function truncateText(text,maxLen){if(!text)return'';text=String(text);return text.length>maxLen?text.substring(0,maxLen)+'...':text}
-    function createProductSlide(pptx,p,imgDataURL){const slide=pptx.addSlide(),slideW=10,slideH=5.625,headerH=0.6,priceH=0.7,footerH=0.4;
-      slide.addShape('rect',{x:0,y:0,w:slideW,h:slideH,fill:{color:'FFFFFF'}});
-      slide.addShape('rect',{x:0,y:0,w:slideW,h:headerH,fill:{color:'1A1A1A'}});
-      slide.addText(str(p.prefix)+str(p.name),{x:0.3,y:0,w:slideW-1.2,h:headerH,fontSize:20,bold:true,color:'FFFFFF',valign:'middle',margin:0});
-      slide.addText('直播专享',{x:slideW-1,y:0.15,w:0.8,h:0.3,fontSize:10,color:'FFFFFF',fill:{color:'E53935'},align:'center',valign:'middle'});
-      const priceY=headerH,priceW=slideW/3;
-      slide.addShape('rect',{x:0,y:priceY,w:slideW,h:priceH,fill:{color:'2A2A2A'}});
-      [{label:'日常价',value:'¥'+str(p.dailyPrice,'—'),color:'C4956A'},{label:'库 存',value:str(p.stock,0)+' 件',color:'4CAF50'},{label:'直播价',value:'¥'+str(p.livePrice,'—'),color:'C4956A'}].forEach((item,i)=>{
-        slide.addText(str(item.label),{x:i*priceW,y:priceY+0.08,w:priceW,h:0.2,fontSize:10,color:'999999',align:'center',margin:0});
-        slide.addText(str(item.value),{x:i*priceW,y:priceY+0.3,w:priceW,h:0.35,fontSize:18,bold:true,color:item.color,align:'center',margin:0})
+    // ============ 数据存储 ============
+    let products = JSON.parse(localStorage.getItem('jxry_products') || '[]');
+    let images = JSON.parse(localStorage.getItem('jxry_images') || '{}');
+    let kols = JSON.parse(localStorage.getItem('jxry_kols') || '[]');
+    let templates = JSON.parse(localStorage.getItem('jxry_templates') || '{}'); // {kolId: [tpl1, tpl2]}
+
+    let editingId = null, currentPreviewId = null, selectMode = false;
+    let selectedIds = new Set(), pendingImages = [];
+    let currentKolId = null, currentTplId = null;
+    let pendingTplData = null;
+    let importParsedProducts = []; // Excel 解析后的产品列表（AI 生成用）
+
+    function saveData() {
+      localStorage.setItem('jxry_products', JSON.stringify(products));
+      localStorage.setItem('jxry_images', JSON.stringify(images));
+      localStorage.setItem('jxry_kols', JSON.stringify(kols));
+      localStorage.setItem('jxry_templates', JSON.stringify(templates));
+    }
+
+    // ============ 视图切换 ============
+    function switchView(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.tab[data-view="'+name+'"]')?.classList.add('active');
+      document.getElementById('libraryView').classList.toggle('hidden', name !== 'library');
+      document.getElementById('kolsView').classList.toggle('hidden', name !== 'kols');
+      document.getElementById('importView').classList.toggle('hidden', name !== 'import');
+      document.getElementById('newView').classList.toggle('hidden', name !== 'new');
+      if (name === 'library') renderProducts();
+      if (name === 'kols') renderKols();
+      if (name === 'import') initImportView();
+    }
+
+    // ============ 产品管理 ============
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      const empty = document.getElementById('emptyState');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filter = document.getElementById('filterSelect').value;
+      let filtered = products.filter(p => {
+        const matchSearch = !search || (p.name||'').toLowerCase().includes(search) || (p.id||'').toLowerCase().includes(search);
+        const stock = parseInt(p.stock) || 0;
+        const matchFilter = !filter || (filter==='in_stock'&&stock>0) || (filter==='out_of_stock'&&stock===0);
+        return matchSearch && matchFilter;
       });
-      const contentY=headerH+priceH,contentH=slideH-headerH-priceH-footerH,leftW=5.5,rightX=6.0;
-      let curY=contentY+0.15;
-      if(p.intro){slide.addText('产品介绍',{x:0.3,y:curY,w:leftW,h:0.2,fontSize:9,color:'888888',margin:0});curY+=0.22;slide.addText(truncateText(p.intro,120),{x:0.3,y:curY,w:leftW,h:0.9,fontSize:10,color:'333333',margin:0});curY+=0.95}
-      if(p.originDesc){slide.addText('产地介绍',{x:0.3,y:curY,w:leftW,h:0.2,fontSize:9,color:'888888',margin:0});curY+=0.22;slide.addText(truncateText(p.originDesc,120),{x:0.3,y:curY,w:leftW,h:0.7,fontSize:10,color:'333333',margin:0});curY+=0.75}
-      if(p.design){slide.addText('设计诠释',{x:0.3,y:curY,w:leftW,h:0.2,fontSize:9,color:'888888',margin:0});curY+=0.22;slide.addText(truncateText(p.design,120),{x:0.3,y:curY,w:leftW,h:0.7,fontSize:10,color:'333333',margin:0})}
-      if(!p.intro&&!p.originDesc&&!p.design){slide.addText('暂无文案内容',{x:0.3,y:contentY+0.5,w:leftW,h:0.3,fontSize:10,color:'CCCCCC',align:'center'})}
-      slide.addShape('rect',{x:rightX-0.15,y:contentY,w:slideW-rightX+0.15,h:contentH,fill:{color:'F9F5F1'}});
-      let specY=contentY+0.1;
-      [['产地',p.origin],['尺寸',p.size],['手围',p.length],['材质',p.material]].forEach(([label,val])=>{if(!val)return;slide.addText(str(label)+'：',{x:rightX,y:specY,w:0.7,h:0.18,fontSize:9,color:'888888',margin:0});slide.addText(truncateText(val,12),{x:rightX+0.7,y:specY,w:3.2,h:0.18,fontSize:9,bold:true,color:'222222',margin:0});specY+=0.22});
-      if(p.id){slide.addText('编号：'+str(p.id),{x:rightX,y:specY+0.1,w:3.5,h:0.15,fontSize:8,color:'BBBBBB',margin:0})}
-      const imgY=specY+0.35,imgH=contentH-(imgY-contentY)-0.1;
-      try{if(imgDataURL&&typeof imgDataURL==='string'&&imgDataURL.startsWith('data:image')){slide.addImage({data:imgDataURL,x:rightX,y:imgY,w:3.8,h:imgH})}else{slide.addText('暂无图片',{x:rightX,y:imgY,w:3.8,h:imgH,fontSize:12,color:'CCCCCC',align:'center',valign:'middle'})}}catch(e){console.warn('图片添加失败:',e);slide.addText('暂无图片',{x:rightX,y:imgY,w:3.8,h:imgH,fontSize:12,color:'CCCCCC',align:'center',valign:'middle'})}
-      const footerY=slideH-footerH;
-      slide.addShape('rect',{x:0,y:footerY,w:slideW,h:footerH,fill:{color:'F4F0EB'}});
-      slide.addText('📦 '+str(p.logistics,'顺丰包邮 | 附鉴定证书 | 7天无理由'),{x:0.2,y:footerY,w:6.5,h:footerH,fontSize:8,color:'666666',valign:'middle',margin:0});
-      slide.addText('景心如意 JXRY',{x:7,y:footerY,w:2.8,h:footerH,fontSize:8,bold:true,color:'C4956A',align:'right',valign:'middle',margin:0})}
-    async function exportSinglePPT(){if(!currentPreviewId)return;const p=products.find(x=>x.id===currentPreviewId);if(!p)return;await doExportPPT([p])}
-    async function batchExportPPT(){if(selectedIds.size===0){showErrorModal('请选择产品','请先在产品库中选择要导出的产品');return}const list=products.filter(x=>selectedIds.has(x.id));await doExportPPT(list)}
-    async function doExportPPT(productList){try{
-      // 检查库加载状态
-      const PptxGen = PptxGenJS;
-      if(!PptxGen){
-        var diag = 'PPT 生成库未加载。\n\n诊断信息：\n';
-        diag += '- PptxGenJS: ' + (typeof PptxGenJS) + '\n';
-        diag += '\n请打开浏览器控制台 (F12) 查看详细日志，刷新页面后重试。';
-        throw new Error(diag);
-      }showExportMask(true);setExportMsg('正在生成 PPT...');setExportBar(10);const pptx=new PptxGen();pptx.layout='LAYOUT_16x9';pptx.title='景心如意产品手卡';pptx.author='景心如意';for(let i=0;i<productList.length;i++){const p=productList[i];setExportMsg('正在生成 '+(i+1)+'/'+productList.length+'：'+p.name);setExportBar(10+Math.round((i/productList.length)*80));const imgList=images[p.id]||[];createProductSlide(pptx,p,imgList[0]||null);await delay(50)}setExportBar(95);setExportMsg('正在打包...');const fileName=productList.length===1?'手卡_'+productList[0].id+'_'+new Date().toISOString().slice(0,10)+'.pptx':'景心如意手卡_'+productList.length+'件_'+new Date().toISOString().slice(0,10)+'.pptx';const arrayBuffer=await pptx.write('arraybuffer');const blob=new Blob([arrayBuffer],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=fileName;link.type='application/vnd.openxmlformats-officedocument.presentationml.presentation';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);setExportBar(100);setExportMsg('✅ 导出成功！');await delay(800);showExportMask(false);cancelSelectMode();showToast('已导出 '+productList.length+' 张手卡到 PPT','success')}catch(e){showExportMask(false);console.error('导出失败:',e);showErrorModal('导出失败','错误信息：'+(e.message||'未知错误')+'\n\n建议：\n1. 刷新页面后重试\n2. 检查网络连接\n3. 尝试减少导出数量')}}
-    document.addEventListener('DOMContentLoaded',()=>{renderProducts();console.log('✅ 景心如意产品手卡系统已加载');console.log('📦 产品数量:',products.length)});
+      if (filtered.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = filtered.map(p => {
+        const imgList = images[p.id] || [];
+        const mainImg = imgList[0] || '';
+        const isSelected = selectedIds.has(p.id);
+        return '<div class="product-card '+(isSelected?'selected':'')+'" onclick="handleCardClick(event,\''+p.id+'\')"><div class="checkbox">✓</div>'+
+          (mainImg ? '<img src="'+mainImg+'" alt="'+p.name+'">' : '<div style="height:200px;background:#f0ebe6;display:flex;align-items:center;justify-content:center;color:#999;">暂无图片</div>')+
+          '<div class="info"><div class="name">'+(p.prefix||'')+p.name+'</div><div class="meta"><span>📦 '+(p.stock||0)+'件</span><span>📍 '+(p.origin||'-')+'</span></div><div class="price">¥'+(p.livePrice||p.dailyPrice||'—')+'</div></div></div>';
+      }).join('');
+    }
+
+    function filterProducts() { renderProducts(); }
+
+    function enterSelectMode() {
+      selectMode = true;
+      selectedIds.clear();
+      document.getElementById('multiSelectBar').classList.add('show');
+      renderKOLSelect();
+      renderProducts();
+    }
+
+    function cancelSelectMode() {
+      selectMode = false;
+      selectedIds.clear();
+      document.getElementById('multiSelectBar').classList.remove('show');
+      renderProducts();
+    }
+
+    function handleCardClick(e, id) {
+      e.stopPropagation();
+      if (!selectMode) { showPreview(id); return; }
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+      document.getElementById('selectedCount').textContent = selectedIds.size;
+      renderProducts();
+    }
+
+    function renderKOLSelect() {
+      const select = document.getElementById('kolSelect');
+      select.innerHTML = '<option value="">选择达人（可选）</option>' +
+        kols.map(k => '<option value="'+k.id+'">'+k.name+'</option>').join('');
+      updateKolSelect();
+    }
+
+    function updateKolSelect() {
+      const kolId = document.getElementById('kolSelect').value;
+      const tplSelect = document.getElementById('templateSelect');
+      if (kolId) {
+        const tpls = templates[kolId] || [];
+        tplSelect.style.display = 'block';
+        tplSelect.innerHTML = '<option value="">选择模板（可选）</option>' +
+          tpls.map(t => '<option value="'+t.id+'">'+t.name+'</option>').join('');
+      } else {
+        tplSelect.style.display = 'none';
+        tplSelect.innerHTML = '<option value="">选择模板（可选）</option>';
+      }
+    }
+
+    // ============ 产品表单 ============
+    function handleImageUpload(e) {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = ev => { pendingImages.push(ev.target.result); renderImagePreview(); };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+
+    function renderImagePreview() {
+      const container = document.getElementById('imagePreview');
+      const existing = editingId ? (images[editingId]||[]).length : 0;
+      container.innerHTML = (editingId ? [...(images[editingId]||[]), ...pendingImages] : pendingImages)
+        .map((src,i) => '<div class="img-item"><img src="'+src+'" alt="图片'+(i+1)+'"><button class="remove" onclick="removeImage('+i+')">×</button></div>').join('');
+    }
+
+    function removeImage(index) {
+      const existing = editingId ? (images[editingId]||[]).length : 0;
+      if (index < existing) { if (editingId) images[editingId].splice(index, 1); }
+      else { pendingImages.splice(index - existing, 1); }
+      renderImagePreview();
+    }
+
+    function checkProductId() {
+      const input = document.getElementById('productIdInput');
+      const hint = document.getElementById('idHint');
+      const val = input.value.trim();
+      if (!val) { hint.textContent = ''; return; }
+      const exists = products.some(p => p.id === val && p.id !== editingId);
+      if (exists) { hint.textContent = '❌ 编号已存在'; hint.className = 'id-hint invalid'; input.setCustomValidity('编号已存在'); }
+      else { hint.textContent = '✓ 可用'; hint.className = 'id-hint valid'; input.setCustomValidity(''); }
+    }
+
+    function saveProduct(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const exists = products.some(p => p.id === data.id && p.id !== editingId);
+      if (exists) { showErrorModal('保存失败', '产品编号已存在，请使用其他编号'); return; }
+      if (editingId) { images[editingId] = [...(images[editingId]||[]), ...pendingImages].slice(0,5); }
+      else { images[data.id] = pendingImages.slice(0,5); }
+      if (editingId) { const idx = products.findIndex(p => p.id === editingId); if (idx !== -1) products[idx] = {...products[idx], ...data}; }
+      else { products.push(data); }
+      saveData();
+      pendingImages = [];
+      editingId = null;
+      form.reset();
+      document.getElementById('imagePreview').innerHTML = '';
+      showToast('保存成功！', 'success');
+      switchView('library');
+    }
+
+    // ============ 预览 ============
+    function showPreview(id) {
+      currentPreviewId = id;
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      const imgList = images[id] || [];
+      const mainImg = imgList[0] || '';
+      document.getElementById('previewContent').innerHTML = buildCardHTML(p, mainImg);
+      renderPreviewKolSelect();
+      document.getElementById('previewArea').classList.add('show');
+    }
+
+    function buildCardHTML(p, mainImg) {
+      return '<div class="card-preview">'+
+        '<div class="card-header"><h2>'+(p.prefix||'')+p.name+'</h2><span class="live-tag">直播专享</span></div>'+
+        '<div class="card-prices">'+
+          '<div class="price-item"><div class="price-label">日常价</div><div class="price-value">¥'+(p.dailyPrice||'—')+'</div></div>'+
+          '<div class="price-item"><div class="price-label">库 存</div><div class="price-value stock">'+(p.stock||0)+' 件</div></div>'+
+          '<div class="price-item"><div class="price-label">直播价</div><div class="price-value">¥'+(p.livePrice||'—')+'</div></div>'+
+        '</div>'+
+        '<div class="card-body"><div class="card-left">'+
+          (p.intro ? '<div class="card-section"><h4>产品介绍</h4><p>'+p.intro+'</p></div>' : '')+
+          (p.originDesc ? '<div class="card-section"><h4>产地介绍</h4><p>'+p.originDesc+'</p></div>' : '')+
+          (p.design ? '<div class="card-section"><h4>设计诠释</h4><p>'+p.design+'</p></div>' : '')+
+        '</div><div class="card-right"><div class="card-specs">'+
+          (p.origin ? '<div class="card-spec"><span class="label">产地</span><span class="value">'+p.origin+'</span></div>' : '')+
+          (p.size ? '<div class="card-spec"><span class="label">尺寸</span><span class="value">'+p.size+'</span></div>' : '')+
+          (p.length ? '<div class="card-spec"><span class="label">手围</span><span class="value">'+p.length+'</span></div>' : '')+
+          (p.material ? '<div class="card-spec"><span class="label">材质</span><span class="value">'+p.material+'</span></div>' : '')+
+        '</div><div class="card-image">'+(mainImg ? '<img src="'+mainImg+'" alt="产品图片">' : '<span class="placeholder">暂无图片</span>')+'</div></div></div>'+
+        '<div class="card-footer"><span>📦 '+(p.logistics||'顺丰包邮 | 附鉴定证书')+'</span><span class="brand">景心如意 JXRY</span></div>'+
+      '</div>';
+    }
+
+    function renderPreviewKolSelect() {
+      const select = document.getElementById('previewKolSelect');
+      select.innerHTML = '<option value="">默认模板</option>' +
+        kols.map(k => '<option value="'+k.id+'">'+k.name+'</option>').join('');
+    }
+
+    function updatePreviewTemplate() {
+      // 模板预览暂不实现，用户导出时选择
+    }
+
+    function closePreview() { document.getElementById('previewArea').classList.remove('show'); }
+
+    function editFromPreview() {
+      if (!currentPreviewId) return;
+      const p = products.find(x => x.id === currentPreviewId);
+      if (!p) return;
+      editingId = currentPreviewId;
+      pendingImages = [];
+      closePreview();
+      Object.keys(p).forEach(key => {
+        const input = document.querySelector('[name="'+key+'"]');
+        if (input) input.value = p[key] || '';
+      });
+      checkProductId();
+      renderImagePreview();
+      document.getElementById('submitBtn').textContent = '更新手卡';
+      switchView('new');
+    }
+
+    // ============ AI 文案生成（DeepSeek API）============
+    const DS_CFG = window.JXRY_CONFIG || {};
+    const DS_KEY  = DS_CFG.DEEPSEEK_API_KEY || '';
+    const DS_URL  = DS_CFG.DEEPSEEK_API_URL || 'https://api.deepseek.com/chat/completions';
+    const DS_MODEL = DS_CFG.DEEPSEEK_MODEL  || 'deepseek-chat';
+
+    async function callDeepSeek(prompt) {
+      if (!DS_KEY) { showErrorModal('未配置 API Key', '请在 config.js 中配置 DEEPSEEK_API_KEY'); return null; }
+      const res = await fetch(DS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + DS_KEY },
+        body: JSON.stringify({ model: DS_MODEL, messages: [{ role: 'user', content: prompt }], max_tokens: 500, temperature: 0.8 })
+      });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+      return json.choices[0].message.content.trim();
+    }
+
+    async function generateAI() {
+      const name      = document.querySelector('[name="name"]')?.value?.trim();
+      const origin    = document.querySelector('[name="origin"]')?.value?.trim();
+      const size      = document.querySelector('[name="size"]')?.value?.trim();
+      const material  = document.querySelector('[name="material"]')?.value?.trim();
+      const category  = document.querySelector('[name="category"]')?.value?.trim();
+      if (!name) { showToast('请先填写产品名称', ''); return; }
+
+      const btn = event?.target?.closest('button');
+      if (btn) { btn.disabled = true; btn.textContent = '🤖 生成中...'; }
+
+      try {
+        // 三段并行请求
+        const [intro, originDesc, design] = await Promise.all([
+          callDeepSeek(`你是一位高端沉香品牌「景心如意」的文案策划。请根据以下产品信息，写一段产品介绍（80-120字），语言优雅、有文化底蕴，不夸大，适合直播口播或手卡展示。\n\n产品名称：${name}\n产地：${origin || '未知'}\n尺寸：${size || '未知'}\n材质：${material || '沉香'}\n\n要求：突出稀缺性、文化感、佩戴价值。只输出文案正文，不要标题和解释。`),
+          callDeepSeek(`你是一位沉香文化专家。请根据产地「${origin || '东南亚'}」，写一段产地介绍（60-100字），介绍该产区沉香的特点、香气特征和文化地位。语言有画面感，适合高端客户阅读。只输出正文。`),
+          callDeepSeek(`你是一位珠宝设计师。请根据产品信息，写一段设计理念说明（60-100字），讲述这款沉香手串的设计思路：如何兼顾佩戴舒适与美学表达，如何突显沉香本身的气质。语言简约有质感。只输出正文。\n\n产品名称：${name}\n尺寸：${size || '未知'}\n配件材质：${material || '未知'}`)
+        ]);
+
+        if (intro)      document.querySelector('[name="intro"]').value     = intro;
+        if (originDesc) document.querySelector('[name="originDesc"]').value = originDesc;
+        if (design)     document.querySelector('[name="design"]').value    = design;
+        showToast('AI 文案已生成，可自行修改', 'success');
+      } catch (e) {
+        showErrorModal('AI 生成失败', e.message || '请检查 API Key 或网络');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🤖 AI 生成'; }
+      }
+    }
+
+    // ============ 导入流程 AI 批量生成 ============
+    let importAIGenerated = false;
+    async function generateImportAI() {
+      if (!importParsedProducts || importParsedProducts.length === 0) {
+        showToast('请先上传 Excel', ''); return;
+      }
+      const btn = document.getElementById('importAIBtn');
+      btn.disabled = true;
+      btn.textContent = '🤖 生成中...';
+
+      let ok = 0, fail = 0;
+      for (let i = 0; i < importParsedProducts.length; i++) {
+        const p = importParsedProducts[i];
+        try {
+          const [intro, originDesc, design] = await Promise.all([
+            p.origin || p.name ? callDeepSeek(`你是一位高端沉香品牌「景心如意」的文案策划。请根据以下产品信息，写一段产品介绍（80-120字），语言优雅、有文化底蕴，不夸大，适合直播口播或手卡展示。\n\n产品名称：${p.name || ''}\n产地：${p.origin || '未知'}\n尺寸：${p.size || '未知'}\n材质：${p.material || '沉香'}\n\n要求：突出稀缺性、文化感、佩戴价值。只输出文案正文，不要标题和解释。`) : Promise.resolve(''),
+            p.origin ? callDeepSeek(`你是一位沉香文化专家。请根据产地「${p.origin}」，写一段产地介绍（60-100字），介绍该产区沉香的特点、香气特征和文化地位。语言有画面感，适合高端客户阅读。只输出正文。`) : Promise.resolve(''),
+            callDeepSeek(`你是一位珠宝设计师。请根据产品信息，写一段设计理念说明（60-100字），讲述这款沉香手串的设计思路：如何兼顾佩戴舒适与美学表达，如何突显沉香本身的气质。语言简约有质感。只输出正文。\n\n产品名称：${p.name || ''}\n尺寸：${p.size || '未知'}\n配件材质：${p.material || '未知'}`)
+          ]);
+          if (intro)      p.intro      = intro;
+          if (originDesc) p.originDesc = originDesc;
+          if (design)     p.design     = design;
+          ok++;
+        } catch (e) { fail++; console.warn('AI 生成失败（行'+(i+2)+'）：', e.message); }
+        // 更新进度
+        btn.textContent = `🤖 ${i+1}/${importParsedProducts.length}...`;
+        await delay(200);
+      }
+
+      importAIGenerated = true;
+      btn.textContent = `✅ 生成完成（${ok}成功/${fail}失败）`;
+      btn.disabled = false;
+      showToast(`AI 文案批量生成完成：${ok} 成功，${fail} 失败`, fail === 0 ? 'success' : '');
+    }
+
+    // ============ 达人管理 ============
+    function renderKols() {
+      const grid = document.getElementById('kolGrid');
+      const empty = document.getElementById('kolEmptyState');
+      if (kols.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = kols.map(k => {
+        const tpls = templates[k.id] || [];
+        return '<div class="kol-card">'+
+          '<div class="kol-avatar">'+ (k.emoji || '👤') +'</div>'+
+          '<div class="info">'+
+            '<div class="name">'+k.name+'</div>'+
+            '<div class="desc">'+ (k.description || '暂无简介') +'</div>'+
+            '<div class="tpl-count">📄 '+tpls.length+' 个模板</div>'+
+            '<div class="actions">'+
+              '<button class="btn btn-sm btn-purple" onclick="openTemplateModal(\''+k.id+'\')">📤 上传模板</button>'+
+              '<button class="btn btn-sm btn-secondary" onclick="showKolDetail(\''+k.id+'\')">查看模板</button>'+
+              '<button class="btn btn-sm btn-secondary" onclick="editKol(\''+k.id+'\')">编辑</button>'+
+              '<button class="btn btn-sm btn-danger" onclick="deleteKol(\''+k.id+'\')">删除</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    function showAddKolModal() {
+      editingId = null;
+      document.getElementById('kolModalTitle').textContent = '添加达人';
+      document.getElementById('kolForm').reset();
+      document.getElementById('kolEditId').value = '';
+      document.getElementById('kolModal').classList.add('show');
+    }
+
+    function editKol(id) {
+      const kol = kols.find(k => k.id === id);
+      if (!kol) return;
+      editingId = id;
+      document.getElementById('kolModalTitle').textContent = '编辑达人';
+      document.getElementById('kolEditId').value = id;
+      document.getElementById('kolName').value = kol.name;
+      document.getElementById('kolDesc').value = kol.description || '';
+      document.getElementById('kolEmoji').value = kol.emoji || '';
+      document.getElementById('kolModal').classList.add('show');
+    }
+
+    function closeKolModal() { document.getElementById('kolModal').classList.remove('show'); }
+
+    function saveKol(e) {
+      e.preventDefault();
+      const id = document.getElementById('kolEditId').value;
+      const name = document.getElementById('kolName').value.trim();
+      const description = document.getElementById('kolDesc').value.trim();
+      const emoji = document.getElementById('kolEmoji').value.trim();
+      if (!name) { showErrorModal('保存失败', '达人名称不能为空'); return; }
+      if (id) {
+        const idx = kols.findIndex(k => k.id === id);
+        if (idx !== -1) { kols[idx] = {...kols[idx], name, description, emoji}; }
+      } else {
+        const newId = 'kol-' + Date.now();
+        kols.push({ id: newId, name, description, emoji });
+      }
+      saveData();
+      closeKolModal();
+      renderKols();
+      showToast('保存成功！', 'success');
+    }
+
+    function deleteKol(id) {
+      const kol = kols.find(k => k.id === id);
+      if (!kol) return;
+      deleteTargetId = id;
+      deleteTargetType = 'kol';
+      document.getElementById('deleteMsg').textContent = '确定要删除达人「'+kol.name+'」吗？该达人的所有模板也会被删除。';
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function showKolDetail(id) {
+      currentKolId = id;
+      const kol = kols.find(k => k.id === id);
+      if (!kol) return;
+      const tpls = templates[id] || [];
+      document.getElementById('kolDetailContent').innerHTML =
+        '<div class="kol-detail-header">'+
+          '<div class="kol-detail-avatar">'+(kol.emoji||'👤')+'</div>'+
+          '<div class="kol-detail-info">'+
+            '<h2>'+kol.name+'</h2>'+
+            '<p>'+(kol.description||'暂无简介')+'</p>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'+
+          '<h3>📄 模板列表 ('+tpls.length+')</h3>'+
+          '<button class="btn btn-primary btn-sm" onclick="showUploadTemplate(\''+id+'\')">+ 上传模板</button>'+
+        '</div>'+
+        (tpls.length === 0 ? '<p style="color:var(--text-light);text-align:center;padding:40px;">暂无模板，点击上方按钮上传</p>' :
+          '<div class="template-list">'+
+            tpls.map(t => '<div class="template-item">'+
+              '<div class="tpl-info"><div class="tpl-name">'+t.name+'</div>'+
+              '<div class="tpl-meta">'+t.fields.length+' 个占位符 | '+t.slideCount+' 张幻灯片</div>'+
+              '<div class="field-tags">'+t.fields.slice(0,6).map(f => '<span class="field-tag">{'+'{'+f+'}'+'}</span>').join('')+(t.fields.length>6?'<span class="field-tag">...</span>':'')+'</div>'+
+              '</div>'+
+              '<div class="tpl-actions">'+
+                '<button class="btn btn-sm btn-secondary" onclick="deleteTemplate(\''+id+'\',\''+t.id+'\')">删除</button>'+
+              '</div>'+
+            '</div>').join('')+
+          '</div>'
+        );
+      document.getElementById('kolDetailModal').classList.add('show');
+    }
+
+    function closeKolDetail() { document.getElementById('kolDetailModal').classList.remove('show'); }
+
+    function openTemplateModal(kolId) {
+      showUploadTemplate(kolId);
+    }
+
+    function showUploadTemplate(kolId) {
+      currentKolId = kolId;
+      pendingTplData = null;
+      document.getElementById('tplName').value = '';
+      document.getElementById('tplFileName').textContent = '点击选择 PPTX 文件';
+      document.getElementById('tplFileInput').value = '';
+      document.getElementById('tplFieldsPreview').style.display = 'none';
+      document.getElementById('uploadTplBtn').disabled = true;
+      document.getElementById('templateModal').classList.add('show');
+    }
+
+    function closeTemplateModal() { document.getElementById('templateModal').classList.remove('show'); }
+
+    async function handleTplFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('tplFileName').textContent = file.name;
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        // ===== 正确识别占位符 =====
+        // 关键：{{ 和 }} 通常分散在多个独立的 <a:r> 块里，
+        // 必须用跨 <a:r> 块的正则匹配才能找到
+        // 实际 PPT XML 结构（可能有 <a:rPr> 格式节点）：
+        //   <a:r><a:rPr .../><a:t>{{</a:t></a:r>
+        //   <a:r><a:rPr .../><a:t>产品名称</a:t></a:r>
+        //   <a:r><a:rPr .../><a:t>}}</a:t></a:r>
+        const fieldSet = new Set();
+
+        for (const [path, zipEntry] of Object.entries(zip.files)) {
+          if (path.match(/^ppt\/slides\/slide\d+\.xml$/)) {
+            const xmlText = await zipEntry.async('string');
+
+            // 检测所有 {{...}} 块，提取纯文本字段名（处理跨run、分隔符等情况）
+            // 策略：找所有 {{ → }}，去掉中间所有 XML 标签，提取纯文本
+            const findAllFieldNames = (xml) => {
+              const names = new Set();
+              let i = 0;
+              while (true) {
+                const p1 = xml.indexOf('{{', i);
+                if (p1 === -1) break;
+                const p2 = xml.indexOf('}}', p1 + 2);
+                if (p2 === -1) break;
+                const inner = xml.substring(p1 + 2, p2);
+                const text = inner.replace(/<[^>]*>/g, '').trim();
+                if (text) names.add(text);
+                i = p2 + 2;
+              }
+              return names;
+            };
+            const detectedNames = findAllFieldNames(xmlText);
+            detectedNames.forEach(f => fieldSet.add(f));
+
+            // 调试：输出该幻灯片的 XML 片段到控制台
+            console.log('[景心如意] 幻灯片 ' + path + ' 检测结果:', {
+              detectedFields: [...fieldSet],
+              totalCount: fieldSet.size
+            });
+          }
+        }
+
+        const fields = Array.from(fieldSet);
+        // 统计幻灯片数量
+        const slideCount = Object.keys(zip.files).filter(p => /^ppt\/slides\/slide\d+\.xml$/.test(p)).length;
+        pendingTplData = {
+          file: arrayBuffer,
+          fields: fields,
+          slideCount: slideCount,
+          zip: zip   // 保存 zip 对象，导出时直接操作 XML
+        };
+        document.getElementById('tplFieldsTags').innerHTML = fields.length > 0
+          ? fields.map(f => '<span class="field-tag">{'+'{'+f+'}'+'}</span>').join('')
+          : '<span style="color:#E53935;font-size:12px;">⚠️ 未识别到占位符，请确认PPT中使用了 {{字段名}} 格式</span>';
+        document.getElementById('tplFieldsPreview').style.display = 'block';
+        document.getElementById('uploadTplBtn').disabled = false;
+      } catch (err) {
+        showErrorModal('解析失败', '无法读取 PPTX 文件：'+err.message);
+        document.getElementById('tplFileName').textContent = '解析失败，请重试';
+        document.getElementById('uploadTplBtn').disabled = true;
+      }
+    }
+
+    function uploadTemplate() {
+      if (!pendingTplData) { showErrorModal('上传失败', '请先选择 PPTX 文件'); return; }
+      const name = document.getElementById('tplName').value.trim() || '未命名模板';
+      const tpl = {
+        id: 'tpl-' + Date.now(),
+        name: name,
+        pptxBase64: arrayBufferToBase64(pendingTplData.file),
+        fields: pendingTplData.fields,
+        slideCount: pendingTplData.slideCount
+      };
+      if (!templates[currentKolId]) templates[currentKolId] = [];
+      templates[currentKolId].push(tpl);
+      saveData();
+      closeTemplateModal();
+      showKolDetail(currentKolId);
+      renderKols();
+      showToast('模板上传成功！', 'success');
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    }
+
+    function deleteTemplate(kolId, tplId) {
+      deleteTargetId = tplId;
+      deleteTargetType = 'template';
+      deleteTargetKolId = kolId;
+      document.getElementById('deleteMsg').textContent = '确定要删除这个模板吗？';
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    // ============ 删除逻辑 ============
+    let deleteTargetId = null, deleteTargetType = null, deleteTargetKolId = null;
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); deleteTargetId = null; deleteTargetType = null; deleteTargetKolId = null; }
+    function confirmDelete() {
+      if (!deleteTargetId) return;
+      if (deleteTargetType === 'kol') {
+        kols = kols.filter(k => k.id !== deleteTargetId);
+        delete templates[deleteTargetId];
+      } else if (deleteTargetType === 'template') {
+        if (templates[deleteTargetKolId]) {
+          templates[deleteTargetKolId] = templates[deleteTargetKolId].filter(t => t.id !== deleteTargetId);
+        }
+        showKolDetail(deleteTargetKolId);
+      } else if (deleteTargetType === 'product') {
+        products = products.filter(p => p.id !== deleteTargetId);
+        delete images[deleteTargetId];
+        renderProducts();
+      }
+      saveData();
+      closeDeleteModal();
+      if (deleteTargetType !== 'template') renderKols();
+      if (deleteTargetType === 'kol') renderKols();
+      showToast('删除成功', 'success');
+    }
+
+    // ============ PPT 导出 ============
+    function str(v, def='') { return (v == null ? def : String(v)); }
+    function truncateText(text, maxLen) { if(!text) return ''; text = String(text); return text.length > maxLen ? text.substring(0, maxLen)+'...' : text; }
+
+    async function exportFromPreview() {
+      if (!currentPreviewId) return;
+      const p = products.find(x => x.id === currentPreviewId);
+      if (!p) return;
+      const kolId = document.getElementById('previewKolSelect').value;
+      const tplId = kolId ? document.getElementById('templateSelect').value : null;
+      await doExportPPT([p], kolId, tplId);
+    }
+
+    async function batchExportPPT() {
+      if (selectedIds.size === 0) { showErrorModal('请选择产品', '请先在产品库中选择要导出的产品'); return; }
+      const list = products.filter(x => selectedIds.has(x.id));
+      const kolId = document.getElementById('kolSelect').value;
+      const tplId = kolId ? document.getElementById('templateSelect').value : null;
+      await doExportPPT(list, kolId, tplId);
+    }
+
+    async function doExportPPT(productList, kolId, tplId, isImport=false) {
+      try {
+        // ===== 路径A：使用自定义模板（JSZip直接改XML） =====
+        if (kolId && tplId) {
+          const tpl = (templates[kolId] || []).find(t => t.id === tplId);
+          if (tpl) {
+            await exportWithTemplate(tpl, productList);
+            return;
+          }
+        }
+
+        // ===== 路径B：无模板，使用默认排版 =====
+        const PptxGen = PptxGenJS;
+        if (!PptxGen) throw new Error('PPT 生成库未加载，请刷新页面重试。');
+        showExportMask(true);
+        setExportMsg('使用默认排版...');
+        setExportBar(5);
+
+        const pptx = new PptxGen();
+        pptx.layout = 'LAYOUT_16x9';
+        pptx.title = '景心如意产品手卡';
+        pptx.author = '景心如意';
+
+        for (let i = 0; i < productList.length; i++) {
+          const p = productList[i];
+          setExportMsg('正在生成 '+(i+1)+'/'+productList.length+'：'+p.name);
+          setExportBar(10 + Math.round((i / productList.length) * 80));
+          const slide = pptx.addSlide();
+          createProductSlide(slide, p);
+          await delay(30);
+        }
+
+        setExportBar(95);
+        setExportMsg('正在打包...');
+        const fileName = productList.length === 1
+          ? '手卡_'+productList[0].id+'_'+new Date().toISOString().slice(0,10)+'.pptx'
+          : '景心如意手卡_'+productList.length+'件_'+new Date().toISOString().slice(0,10)+'.pptx';
+
+        const arrayBuffer = await pptx.write('arraybuffer');
+        downloadBlob(arrayBuffer, fileName);
+
+        setExportBar(100);
+        setExportMsg('✅ 导出成功！');
+        await delay(500);
+        showExportMask(false);
+        cancelSelectMode();
+        showToast('已导出 '+productList.length+' 张手卡', 'success');
+      } catch (e) {
+        showExportMask(false);
+        console.error('导出失败:', e);
+        showErrorModal('导出失败', '错误信息：'+(e.message||'未知错误')+'\n\n建议：\n1. 刷新页面后重试\n2. 检查模板是否包含合法占位符');
+      }
+    }
+
+    function downloadBlob(arrayBuffer, fileName) {
+      const blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // ===== 核心：用 JSZip 直接修改 PPTX 模板 XML =====
+
+    // ===== 跨 <a:r> 块占位符替换 =====
+    // 模板中 {{、字段名、}} 分布在三个独立 <a:r> 块内
+    // 匹配后只保留字段名块，将其文本替换为实际值
+    function replaceCrossRunPlaceholders(xml, fmap) {
+      for (const [field, value] of Object.entries(fmap)) {
+        let count = 0;
+        while (true) {
+          const p1 = xml.indexOf('{{');
+          if (p1 === -1) break;
+          const p2 = xml.indexOf('}}', p1 + 2);
+          if (p2 === -1) break;
+          // 提取字段名（去掉XML标签）
+          const inner = xml.substring(p1 + 2, p2);
+          const text = inner.replace(/<[^>]*>/g, '').trim();
+          if (text !== field) {
+            // 不是目标字段，标记跳过继续找下一个
+            xml = xml.substring(0, p1) + '__SKIP__' + xml.substring(p1 + 2);
+            continue;
+          }
+          // 找到目标字段，定位完整的 <a:r>...</a:r> 块
+          const rStart = xml.lastIndexOf('<a:r>', p1);
+          if (rStart === -1) break;
+          const rEndTag = xml.indexOf('</a:r>', p2);
+          if (rEndTag === -1) break;
+          const rEnd = rEndTag + 6; // len('</a:r>')
+          // 提取 {{ 所在 run 的 <a:rPr> 属性（不用正则，直接找标签）
+          const runContent = xml.substring(rStart, p1);
+          const rprStart = runContent.indexOf('<a:rPr');
+          let rpr = '<a:rPr/>';
+          if (rprStart !== -1) {
+            const rprEndSelfClose = runContent.indexOf('/>', rprStart);
+            const rprEndOpen = runContent.indexOf('>', rprStart);
+            if (rprEndSelfClose !== -1 && (rprEndOpen === -1 || rprEndSelfClose < rprEndOpen)) {
+              rpr = runContent.substring(rprStart, rprEndSelfClose + 2);
+            } else if (rprEndOpen !== -1) {
+              const rprClose = runContent.indexOf('</a:rPr>', rprStart);
+              rpr = rprClose !== -1 ? runContent.substring(rprStart, rprClose + 8) : '<a:rPr/>';
+            }
+          }
+          // 构建替换后的新 run
+          const newRun = '<a:r>' + rpr + '<a:t>' + escapeXml(value) + '</a:t></a:r>';
+          xml = xml.substring(0, rStart) + newRun + xml.substring(rEnd);
+          count++;
+          if (count > 20) break; // 安全限制
+        }
+        // 恢复被跳过的 {{ 标记
+        xml = xml.replace(/__SKIP__/g, '{{');
+      }
+      return xml;
+    }
+
+    async function exportWithTemplate(tpl, productList) {
+      console.log('[IMG] exportWithTemplate START, productList.length=' + productList.length);
+      console.log('[IMG] productList[0]._excelImages=' + (productList[0] && productList[0]._excelImages ? productList[0]._excelImages.length + '张' : '无'));
+      setExportMsg('正在加载模板...');
+      setExportBar(5);
+
+      // 1. 解码模板 PPTX → JSZip 实例
+      const binaryString = atob(tpl.pptxBase64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+      const zip = await JSZip.loadAsync(bytes.buffer);
+      setExportBar(15);
+
+      // 2. 获取所有现有幻灯片路径，按数字排序
+      const slidePaths = [];
+      zip.forEach((path, entry) => {
+        if (path.match(/^ppt\/slides\/slide\d+\.xml$/)) slidePaths.push(path);
+      });
+      slidePaths.sort((a, b) => {
+        const na = parseInt(a.match(/slide(\d+)/)[1]);
+        const nb = parseInt(b.match(/slide(\d+)/)[1]);
+        return na - nb;
+      });
+
+      if (slidePaths.length === 0) throw new Error('模板中未找到任何幻灯片');
+
+      const baseSlidePath = slidePaths[0];
+      const baseSlideContent = await zip.file(baseSlidePath).async('string');
+
+      // 3. 为多余的产品复制幻灯片页
+      const needed = Math.max(productList.length, 1);
+      setExportMsg('正在准备幻灯片页面...');
+
+      const finalSlidePaths = [...slidePaths];
+      for (let i = slidePaths.length; i < needed; i++) {
+        const newPath = `ppt/slides/slide${i + 1}.xml`;
+        zip.file(newPath, baseSlideContent);
+        finalSlidePaths.push(newPath);
+      }
+      setExportBar(25);
+
+      // 4. 更新 [Content_Types].xml 和 presentation.xml.rels
+      await fixPresXmlSimple(zip, finalSlidePaths);
+      setExportBar(35);
+
+      // 5. 逐页替换占位符
+      const fieldMaps = productList.map(p => buildFieldMap(p));
+
+      for (let i = 0; i < productList.length; i++) {
+        setExportMsg('正在填充第 '+(i+1)+'/'+productList.length+' 页...');
+        setExportBar(35 + Math.round((i / productList.length) * 45));
+
+        let xml = await zip.file(finalSlidePaths[i]).async('string');
+        const fmap = fieldMaps[i];
+
+        // 替换跨 <a:r> 块的占位符（{{、字段名、}} 分散在三处）
+        xml = replaceCrossRunPlaceholders(xml, fmap);
+        // 同时处理同一 <a:r> 内的 {{field}} 写法（仅在 <a:t> 文本节点内操作）
+        xml = xml.replace(/(<a:t[^>]*>)(.*?)(<\/a:t>)/g, (m, open, content, close) => {
+          return open + content.replace(/\{\{([^<>{}]+)\}\}/g, (m2, f) => {
+            return fmap[f] !== undefined ? escapeXml(fmap[f]) : m2;
+          }) + close;
+        });
+
+        zip.file(finalSlidePaths[i], xml);
+        await delay(10);
+      }
+      setExportBar(85);
+
+      // 6. 在 zip 中为每页 slide 嵌入图片（JSZip XML 方式，无需 PptxGenJS 加载）
+      setExportMsg('正在嵌入图片...');
+      for (let i = 0; i < productList.length; i++) {
+        const p = productList[i];
+        // 优先使用 Excel 内嵌图片，其次用本地产品图片
+        let mainImg = null;
+        if (p._excelImages && p._excelImages.length > 0) {
+          mainImg = p._excelImages[0];
+          console.log('[IMG] 产品' + i + ' 使用 _excelImages');
+        } else {
+          const imgList = images[p.id] || [];
+          mainImg = imgList[0] || null;
+          console.log('[IMG] 产品' + i + ' 使用本地图片, count=' + imgList.length);
+        }
+        if (!mainImg) { console.log('[IMG] 产品' + i + ' 无图片，跳过'); continue; }
+
+        try {
+          // 解析 base64 → Uint8Array
+          let imgData, imgExt;
+          if (typeof mainImg === 'string' && mainImg.startsWith('data:')) {
+            const m = mainImg.match(/^data:image\/([a-zA-Z+]+);base64,(.+)$/);
+            if (!m) { console.warn('[IMG] 产品' + i + ' data URL 格式不识别'); continue; }
+            imgExt = m[1].toLowerCase().replace('jpeg','jpg').replace('svg+xml','svg');
+            const bStr = atob(m[2]);
+            const arr = new Uint8Array(bStr.length);
+            for (let j = 0; j < bStr.length; j++) arr[j] = bStr.charCodeAt(j);
+            imgData = arr;
+          } else if (mainImg instanceof Uint8Array || mainImg instanceof ArrayBuffer) {
+            imgExt = 'png'; // 默认
+            imgData = mainImg instanceof ArrayBuffer ? new Uint8Array(mainImg) : mainImg;
+          } else {
+            console.warn('[IMG] 产品' + i + ' 图片格式不支持: ' + typeof mainImg); continue;
+          }
+
+          const slidePath = finalSlidePaths[i];
+          const slideDir  = slidePath.replace(/\/[^/]+$/, '');           // ppt/slides
+          const slideFile = slidePath.replace(/^.*\//, '');              // slide1.xml
+          const relsPath  = slideDir + '/_rels/' + slideFile + '.rels';
+          const imgPath   = 'ppt/media/img_p' + (i+1) + '.' + imgExt;
+          const rId       = 'rIdImg' + (i+1);
+
+          // 写入图片文件
+          zip.file(imgPath, imgData);
+
+          // 更新 Content_Types（若扩展名未注册）
+          let ct = await zip.file('[Content_Types].xml').async('string');
+          const ctMime = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif', webp:'image/webp', svg:'image/svg+xml' };
+          const mime = ctMime[imgExt] || 'image/png';
+          if (!ct.includes('Extension="'+imgExt+'"')) {
+            ct = ct.replace('</Types>', `  <Default Extension="${imgExt}" ContentType="${mime}"/>\n</Types>`);
+            zip.file('[Content_Types].xml', ct);
+          }
+
+          // 更新 slide rels
+          let relsXml = '';
+          const relsFile = zip.file(relsPath);
+          if (relsFile) {
+            relsXml = await relsFile.async('string');
+          } else {
+            relsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
+          }
+          // 相对路径：rels 位于 ppt/slides/_rels/，目标位于 ppt/media/，
+          // 从 _rels/ 向上 1 级到 ppt/slides/，再进入 media/
+          const relTarget = '../media/' + imgPath.replace('ppt/media/', '');
+          if (!relsXml.includes(rId)) {
+            relsXml = relsXml.replace('</Relationships>',
+              `  <Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${relTarget}"/>\n</Relationships>`);
+            zip.file(relsPath, relsXml);
+          }
+
+          // ================================================================
+          //  关键修复：查找并替换模板中现有的图片占位符，而非追加新元素
+          // ================================================================
+          const slideXmlRaw = await zip.file(slidePath).async('string');
+
+          // 默认 picXml（后备位置）
+          const defX = Math.round(5.9 * 914400), defY = Math.round(1.3 * 914400);
+          const defW = Math.round(3.8 * 914400), defH = Math.round(3.5 * 914400);
+          const picXml = `<p:pic xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <p:nvPicPr>
+    <p:cNvPr id="99${i+1}" name="产品图片${i+1}"/>
+    <p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr>
+    <p:nvPr/>
+  </p:nvPicPr>
+  <p:blipFill>
+    <a:blip r:embed="${rId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+    <a:stretch><a:fillRect/></a:stretch>
+  </p:blipFill>
+  <p:spPr>
+    <a:xfrm><a:off x="${defX}" y="${defY}"/><a:ext cx="${defW}" cy="${defH}"/></a:xfrm>
+    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+  </p:spPr>
+</p:pic>`;
+
+          // 查找占位符图片（常见 name 属性：图片/Picture/Image/PlaceHolder）
+          // 支持 <p:pic> 元素或 <p:sp> 图片占位符类型
+          const phPlaceholders = [];
+          // 策略1：查找 <p:pic> 元素（带 name 含图片/Picture/Image 等关键词）
+          const picRegex = /<p:pic[\s\S]*?<\/p:pic>/g;
+          let picMatch;
+          while ((picMatch = picRegex.exec(slideXmlRaw)) !== null) {
+            const phXml = picMatch[0];
+            if (/图片|Picture|Image|Placeholder|placeHolder|产品图片/i.test(phXml)) {
+              phPlaceholders.push({ xml: phXml, idx: picMatch.index, type: 'pic' });
+            }
+          }
+          // 策略2：查找 <p:sp> 图片占位符（type="pic" 或 idx="18" 等）
+          const spRegex = /<p:sp[\s\S]*?<\/p:sp>/g;
+          let spMatch;
+          while ((spMatch = spRegex.exec(slideXmlRaw)) !== null) {
+            const phXml = spMatch[0];
+            if (/type=["']pic["']|图片占位符|Picture\s*Placeholder|产品图片/i.test(phXml)) {
+              phPlaceholders.push({ xml: phXml, idx: spMatch.index, type: 'sp' });
+            }
+          }
+
+          let insertXml = picXml;   // 默认使用后备位置占位符
+          if (phPlaceholders.length > 0) {
+            // 替换最后一个匹配到的占位符（最可能是主图）
+            const ph = phPlaceholders[phPlaceholders.length - 1];
+            // 从占位符中提取 x, y, cx, cy（EMU 单位），用于精确定位
+            const posMatch = /<a:xfrm[^>]*>[\s\S]*?<a:off[^>]*x=["']([^"']+)["'][^>]*y=["']([^"']+)["'][^>]*>[\s\S]*?<a:ext[^>]*cx=["']([^"']+)["'][^>]*cy=["']([^"']+)["'][^>]*>/.exec(ph.xml)
+              || /<a:off[^>]*x=["']([^"']+)["'][^>]*y=["']([^"']+)["'][^>]*>[\s\S]*?<a:ext[^>]*cx=["']([^"']+)["'][^>]*cy=["']([^"']+)["'][^>]*>/.exec(ph.xml);
+            if (posMatch) {
+              const px = parseInt(posMatch[1]) || Math.round(5.9 * 914400);
+              const py = parseInt(posMatch[2]) || Math.round(1.3 * 914400);
+              const pw = parseInt(posMatch[3]) || Math.round(3.8 * 914400);
+              const ph2 = parseInt(posMatch[4]) || Math.round(3.5 * 914400);
+              insertXml = `<p:pic xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <p:nvPicPr>
+    <p:cNvPr id="99${i+1}" name="产品图片${i+1}"/>
+    <p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr>
+    <p:nvPr/>
+  </p:nvPicPr>
+  <p:blipFill>
+    <a:blip r:embed="${rId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+    <a:stretch><a:fillRect/></a:stretch>
+  </p:blipFill>
+  <p:spPr>
+    <a:xfrm><a:off x="${px}" y="${py}"/><a:ext cx="${pw}" cy="${ph2}"/></a:xfrm>
+    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+  </p:spPr>
+</p:pic>`;
+              console.log('[IMG] 产品' + i + ' 替换占位符，提取位置 x=' + px/914400 + 'in y=' + py/914400 + 'in w=' + pw/914400 + 'in h=' + ph2/914400 + 'in');
+            }
+            // 执行替换
+            slideXml = slideXmlRaw.replace(ph.xml, insertXml);
+            console.log('[IMG] 产品' + i + ' 已替换占位符图片');
+          } else {
+            // 无占位符 → 追加到 </p:spTree> 之前（兜底方案）
+            console.log('[IMG] 产品' + i + ' 未找到占位符，执行追加模式');
+            slideXml = slideXmlRaw;
+            if (slideXml.includes('</p:spTree>')) {
+              slideXml = slideXml.replace('</p:spTree>', insertXml + '\n</p:spTree>');
+            } else {
+              slideXml = slideXml.replace('</p:cSld>', '<p:spTree>' + insertXml + '</p:spTree></p:cSld>');
+            }
+          }
+          // 确保 XML 有 r: 命名空间
+          if (!slideXml.includes('xmlns:r=')) {
+            slideXml = slideXml.replace('<p:sld ', '<p:sld xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ');
+          }
+          zip.file(slidePath, slideXml);
+          console.log('[IMG] 产品' + i + ' 图片已注入 slide XML, rId=' + rId + ', ext=' + imgExt);
+        } catch (imgErr) {
+          console.error('[IMG] 产品' + i + ' 图片注入失败:', imgErr);
+          // 图片失败不影响整体导出，继续下一张
+        }
+      }
+      setExportBar(92);
+
+      // 7. 打包最终 PPTX（含图片）
+      setExportMsg('正在打包 PPTX...');
+      const pptxBlob = await zip.generateAsync({
+        type: 'arraybuffer',
+        mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      });
+      setExportBar(98);
+
+      // 8. 下载
+      const fileName = productList.length === 1
+        ? '手卡_'+productList[0].id+'_'+new Date().toISOString().slice(0,10)+'.pptx'
+        : '景心如意手卡_'+productList.length+'件_'+new Date().toISOString().slice(0,10)+'.pptx';
+      downloadBlob(pptxBlob, fileName);
+
+      // 9. 完成
+      showExportMask(false);
+      cancelSelectMode();
+      showToast('已导出 ' + productList.length + ' 张手卡', 'success');
+    }
+
+    function buildFieldMap(p) {
+      const m = {
+        'name':       str(p.prefix) + str(p.name),
+        'dailyPrice':  str(p.dailyPrice),
+        'livePrice':   str(p.livePrice),
+        'stock':       str(p.stock, '0'),
+        'origin':      str(p.origin),
+        'size':        str(p.size),
+        'length':      str(p.length),
+        'material':    str(p.material),
+        'intro':       str(p.intro),
+        'originDesc':  str(p.originDesc),
+        'design':      str(p.design),
+        'logistics':   str(p.logistics, '顺丰包邮 | 附鉴定证书'),
+        'id':          str(p.id)
+      };
+      // 中文字段名别名
+      m['产品名称']= m['name'];  m['日常价']= m['dailyPrice'];
+      m['直播价']= m['livePrice'];  m['库存']= m['stock'];
+      m['产地']= m['origin'];  m['产地介绍']= m['originDesc'];
+      m['尺寸']= m['size'];  m['手围/长度']= m['length'];
+      m['手围']= m['length'];  m['长度']= m['length'];
+      m['配件材质']= m['material'];  m['材质']= m['material'];
+      m['产品介绍']= m['intro'];  m['介绍']= m['intro'];
+      m['设计诠释']= m['design'];  m['设计']= m['design'];
+      m['物流说明']= m['logistics'];  m['物流']= m['logistics'];
+      return m;
+    }
+
+    function escapeXml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
+    async function updateSlideRegistry(zip, allSlidePaths) {
+      // 更新 [Content_Types].xml
+      let contentTypes = await zip.file('[Content_Types].xml').async('string');
+      for (let i = 0; i < allSlidePaths.length; i++) {
+        const slideNum = allSlidePaths[i].match(/slide(\d+)/)[1];
+        if (!contentTypes.includes(`/slides/slide${slideNum}.xml`)) {
+          const newOverride = `  <Override PartName="/ppt/slides/slide${slideNum}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>\n`;
+          contentTypes = contentTypes.replace('</Types>', newOverride + '</Types>');
+        }
+      }
+      zip.file('[Content_Types].xml', contentTypes);
+
+      // 更新 ppt/_rels/presentation.xml.rels
+      const relsPath = 'ppt/_rels/presentation.xml.rels';
+      let relsXml = await zip.file(relsPath).async('string');
+
+      // 找最大 rId
+      const ridMatches = relsXml.matchAll(/Id="rId(\d+)"/g);
+      let maxRid = 0;
+      for (const m of ridMatches) {
+        const n = parseInt(m[1]);
+        if (n > maxRid) maxRid = n;
+      }
+
+      for (let i = 0; i < allSlidePaths.length; i++) {
+        const slideNum = allSlidePaths[i].match(/slide(\d+)/)[1];
+        if (!relsXml.includes(`slide${slideNum}.xml`)) {
+          maxRid++;
+          const newRel = `  <Relationship Id="rId${maxRid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${slideNum}.xml"/>\n`;
+          relsXml = relsXml.replace('</Relationships>', newRel + '</Relationships>');
+        }
+      }
+      zip.file(relsPath, relsXml);
+
+      // 更新 ppt/presentation.xml 中的 sldIdLst
+      let presXml = await zip.file('ppt/presentation.xml').async('string');
+      const sldIdMatches = presXml.matchAll(/sldId id="(\d+)"/g);
+      let maxSldId = 255;
+      for (const m of sldIdMatches) {
+        const n = parseInt(m[1]);
+        if (n > maxSldId) maxSldId = n;
+      }
+
+      for (let i = 0; i < allSlidePaths.length; i++) {
+        const slideNum = allSlidePaths[i].match(/slide(\d+)/)[1];
+        if (!presXml.includes(`slide${slideNum}.xml`)) {
+          maxSldId++;
+          maxRid++; // 需要确保 rId 也同步
+          // 找到对应的 rId
+          const ridMatch = relsXml.match(new RegExp(`Target="slides/slide${slideNum}\\.xml".*?Id="rId(\\d+)"`));
+          const rid = ridMatch ? ridMatch[1] : maxRid;
+          const newSldId = `      <p:sldId id="${maxSldId}" r:id="rId${rid}"/>\n`;
+          presXml = presXml.replace('</p:sldIdLst>', newSldId + '      </p:sldIdLst>');
+          // 只替换第一个（为了简单，用精确替换）
+          presXml = presXml.replace('      </p:sldIdLst>', '');
+          // 上面破坏了结构，让我重新思考...
+        }
+      }
+      // 由于上面逻辑复杂且易错，改用更简单的方式：直接修改 presentation.xml 的 sldIdLst
+      // 重新读取并正确处理
+      await fixPresentationXml(zip, allSlidePaths);
+    }
+
+    async function fixPresentationXml(zip, allSlidePaths) {
+      let presXml = await zip.file('ppt/presentation.xml').async('string');
+      let relsXml = await zip.file('ppt/_rels/presentation.xml.rels').async('string');
+
+      // 找最大 sldId
+      let maxSldId = 255;
+      const sldIdMatches2 = presXml.matchAll(/sldId id="(\d+)"/g);
+      for (const m of sldIdMatches2) {
+        const n = parseInt(m[1]); if (n > maxSldId) maxSldId = n;
+      }
+
+      // 找最大 rId
+      let maxRid = 0;
+      const ridMatches2 = relsXml.matchAll(/Id="rId(\d+)"/g);
+      for (const m of ridMatches2) {
+        const n = parseInt(m[1]); if (n > maxRid) maxRid = n;
+      }
+
+      let newSldIds = '';
+      let newRels = '';
+
+      for (let i = 0; i < allSlidePaths.length; i++) {
+        const slideNum = allSlidePaths[i].match(/slide(\d+)/)[1];
+        // 检查 presXml 是否已包含此 slide
+        if (!presXml.includes(`Target="slides/slide${slideNum}.xml"`)) {
+          maxSldId++;
+          maxRid++;
+          newSldIds += `      <p:sldId id="${maxSldId}" r:id="rId${maxRid}"/>\n`;
+          newRels += `  <Relationship Id="rId${maxRid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${slideNum}.xml"/>\n`;
+        }
+      }
+
+      if (newSldIds) {
+        presXml = presXml.replace('</p:sldIdLst>', newSldIds + '      </p:sldIdLst>');
+        // 清理残余
+        presXml = presXml.replace('      </p:sldIdLst>', '');
+        // 重新拼接
+        presXml = presXml.replace('</p:sldIdLst>', '');
+        // 这太容易出错了，我用一个更稳健的方法
+      }
+
+      // 放弃复杂字符串操作，用 DOMParser 处理 XML
+      // 但浏览器中可能不支持所有 XML 操作
+      // 改用简单字符串替换（精确版）
+      await fixPresXmlSimple(zip, allSlidePaths);
+    }
+
+    async function fixPresXmlSimple(zip, allSlidePaths) {
+      let presXml = await zip.file('ppt/presentation.xml').async('string');
+      let relsXml = await zip.file('ppt/_rels/presentation.xml.rels').async('string');
+      let contentTypes = await zip.file('[Content_Types].xml').async('string');
+
+      // 找最大 rId
+      let maxRid = 0;
+      const ridRe = /Id="rId(\d+)"/g;
+      let m;
+      while ((m = ridRe.exec(relsXml)) !== null) {
+        const n = parseInt(m[1]); if (n > maxRid) maxRid = n;
+      }
+
+      let maxSldId = 255;
+      const sldIdRe = /sldId id="(\d+)"/g;
+      while ((m = sldIdRe.exec(presXml)) !== null) {
+        const n = parseInt(m[1]); if (n > maxSldId) maxSldId = n;
+      }
+
+      for (let i = 0; i < allSlidePaths.length; i++) {
+        const slideNum = allSlidePaths[i].match(/slide(\d+)/)[1];
+        const slideFile = `slides/slide${slideNum}.xml`;
+
+        // 添加 Content_Types 条目
+        if (!contentTypes.includes(`slide${slideNum}.xml`)) {
+          const entry = `  <Override PartName="/ppt/slides/slide${slideNum}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>\n`;
+          contentTypes = contentTypes.replace('</Types>', entry + '</Types>');
+        }
+
+        // 添加 rels 条目
+        if (!relsXml.includes(`slide${slideNum}.xml`)) {
+          maxRid++;
+          const relEntry = `  <Relationship Id="rId${maxRid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="${slideFile}"/>\n`;
+          relsXml = relsXml.replace('</Relationships>', relEntry + '</Relationships>');
+        }
+
+        // 添加 sldId 条目
+        if (!presXml.includes(`slide${slideNum}.xml`)) {
+          maxSldId++;
+          const sldEntry = `      <p:sldId id="${maxSldId}" r:id="rId${maxRid}"/>\n`;
+          presXml = presXml.replace('</p:sldIdLst>', sldEntry + '      </p:sldIdLst>');
+        }
+      }
+
+      zip.file('[Content_Types].xml', contentTypes);
+      zip.file('ppt/_rels/presentation.xml.rels', relsXml);
+      zip.file('ppt/presentation.xml', presXml);
+    }
+
+    // 默认幻灯片创建（无模板路径使用）
+    function createProductSlide(slide, p) {
+      const slideW = 10, slideH = 5.625, headerH = 0.6, priceH = 0.7, footerH = 0.4;
+      slide.addShape('rect', { x: 0, y: 0, w: slideW, h: slideH, fill: { color: 'FFFFFF' } });
+      slide.addShape('rect', { x: 0, y: 0, w: slideW, h: headerH, fill: { color: '1A1A1A' } });
+      slide.addText(str(p.prefix)+str(p.name), { x: 0.3, y: 0, w: slideW-1.2, h: headerH, fontSize: 20, bold: true, color: 'FFFFFF', valign: 'middle', margin: 0 });
+      slide.addText('直播专享', { x: slideW-1, y: 0.15, w: 0.8, h: 0.3, fontSize: 10, color: 'FFFFFF', fill: { color: 'E53935' }, align: 'center', valign: 'middle' });
+      const priceY = headerH, priceW = slideW/3;
+      slide.addShape('rect', { x: 0, y: priceY, w: slideW, h: priceH, fill: { color: '2A2A2A' } });
+      [{ label: '日常价', value: '¥'+str(p.dailyPrice,'—'), color: 'C4956A' }, { label: '库 存', value: str(p.stock,0)+' 件', color: '4CAF50' }, { label: '直播价', value: '¥'+str(p.livePrice,'—'), color: 'C4956A' }].forEach((item, i) => {
+        slide.addText(str(item.label), { x: i*priceW, y: priceY+0.08, w: priceW, h: 0.2, fontSize: 10, color: '999999', align: 'center', margin: 0 });
+        slide.addText(str(item.value), { x: i*priceW, y: priceY+0.3, w: priceW, h: 0.35, fontSize: 18, bold: true, color: item.color, align: 'center', margin: 0 });
+      });
+      const contentY = headerH+priceH, contentH = slideH-headerH-priceH-footerH, leftW = 5.5, rightX = 6.0;
+      let curY = contentY + 0.15;
+      if (p.intro) { slide.addText('产品介绍', { x: 0.3, y: curY, w: leftW, h: 0.2, fontSize: 9, color: '888888', margin: 0 }); curY += 0.22; slide.addText(truncateText(p.intro,120), { x: 0.3, y: curY, w: leftW, h: 0.9, fontSize: 10, color: '333333', margin: 0 }); curY += 0.95; }
+      if (p.originDesc) { slide.addText('产地介绍', { x: 0.3, y: curY, w: leftW, h: 0.2, fontSize: 9, color: '888888', margin: 0 }); curY += 0.22; slide.addText(truncateText(p.originDesc,120), { x: 0.3, y: curY, w: leftW, h: 0.7, fontSize: 10, color: '333333', margin: 0 }); curY += 0.75; }
+      if (p.design) { slide.addText('设计诠释', { x: 0.3, y: curY, w: leftW, h: 0.2, fontSize: 9, color: '888888', margin: 0 }); curY += 0.22; slide.addText(truncateText(p.design,120), { x: 0.3, y: curY, w: leftW, h: 0.7, fontSize: 10, color: '333333', margin: 0 }); }
+      if (!p.intro && !p.originDesc && !p.design) { slide.addText('暂无文案内容', { x: 0.3, y: contentY+0.5, w: leftW, h: 0.3, fontSize: 10, color: 'CCCCCC', align: 'center' }); }
+      slide.addShape('rect', { x: rightX-0.15, y: contentY, w: slideW-rightX+0.15, h: contentH, fill: { color: 'F9F5F1' } });
+      let specY = contentY + 0.1;
+      [['产地',p.origin],['尺寸',p.size],['手围',p.length],['材质',p.material]].forEach(([label,val]) => {
+        if (!val) return;
+        slide.addText(str(label)+'：', { x: rightX, y: specY, w: 0.7, h: 0.18, fontSize: 9, color: '888888', margin: 0 });
+        slide.addText(truncateText(val,12), { x: rightX+0.7, y: specY, w: 3.2, h: 0.18, fontSize: 9, bold: true, color: '222222', margin: 0 });
+        specY += 0.22;
+      });
+      if (p.id) { slide.addText('编号：'+str(p.id), { x: rightX, y: specY+0.1, w: 3.5, h: 0.15, fontSize: 8, color: 'BBBBBB', margin: 0 }); }
+      const imgY = specY+0.35, imgH = contentH-(imgY-contentY)-0.1;
+      // 优先使用 Excel 内嵌图片，其次用本地产品图片
+      let mainImg = null;
+      if (p._excelImages && p._excelImages.length > 0) {
+        mainImg = p._excelImages[0];
+      } else {
+        const imgList = images[p.id] || [];
+        mainImg = imgList[0];
+      }
+      try {
+        if (mainImg && typeof mainImg === 'string' && mainImg.startsWith('data:image')) {
+          slide.addImage({ data: mainImg, x: rightX, y: imgY, w: 3.8, h: imgH });
+        } else {
+          slide.addText('暂无图片', { x: rightX, y: imgY, w: 3.8, h: imgH, fontSize: 12, color: 'CCCCCC', align: 'center', valign: 'middle' });
+        }
+      } catch(e) {
+        slide.addText('暂无图片', { x: rightX, y: imgY, w: 3.8, h: imgH, fontSize: 12, color: 'CCCCCC', align: 'center', valign: 'middle' });
+      }
+      const footerY = slideH-footerH;
+      slide.addShape('rect', { x: 0, y: footerY, w: slideW, h: footerH, fill: { color: 'F4F0EB' } });
+      slide.addText('📦 '+str(p.logistics,'顺丰包邮 | 附鉴定证书 | 7天无理由'), { x: 0.2, y: footerY, w: 6.5, h: footerH, fontSize: 8, color: '666666', valign: 'middle', margin: 0 });
+      slide.addText('景心如意 JXRY', { x: 7, y: footerY, w: 2.8, h: footerH, fontSize: 8, bold: true, color: 'C4956A', align: 'right', valign: 'middle', margin: 0 });
+    }
+
+    // ============ 通用工具 ============
+    function showToast(msg, type='') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show ' + (type ? ' '+type : '');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function showErrorModal(title, msg) {
+      document.getElementById('errorTitle').textContent = title;
+      document.getElementById('errorMessage').textContent = msg;
+      document.getElementById('errorModal').classList.add('show');
+    }
+
+    function closeErrorModal() { document.getElementById('errorModal').classList.remove('show'); }
+    function showExportMask(show) { document.getElementById('exportMask').classList.toggle('show', show); }
+    function setExportMsg(msg) { document.getElementById('exportMsg').textContent = msg; }
+    function setExportBar(pct) { document.getElementById('exportBar').style.width = pct+'%'; }
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ============ 批量导入模块 ============
+    // 中文字段名映射
+    const CN_FIELD_MAP = {
+      // —— 与 PPT 占位符直接对应的核心字段 ——
+      '产品名称':'name','名称':'name',
+      '日常价':'dailyPrice','原价':'dailyPrice','市场价':'dailyPrice',
+      '直播价':'livePrice','到手价':'livePrice','活动价':'livePrice',
+      '库存':'stock','数量':'stock',
+      '产地':'origin','来源地':'origin',
+      '尺寸':'size','规格':'size',
+      '手围':'length','手腕围':'length',
+      '配件材质':'material','配件':'material','材质':'material',
+      '产品介绍':'intro','简介':'intro','描述':'intro',
+      '产地介绍':'originDesc','产地故事':'originDesc',
+      '设计诠释':'design','设计说明':'design',
+      '物流信息':'logistics','快递':'logistics','物流':'logistics',
+      '物流说明':'logistics',
+      '产品编号':'id','编号':'id','货号':'id','商家编码':'id',
+      '达人前缀':'prefix','前缀':'prefix',
+      // —— Excel 额外列（存储但不一定用于模板）——
+      '定位':'position',
+      '分类':'category',
+      '主石材质':'mainStone',
+      '配石材质':'sideStone',
+      '配件材质（贵）':'accessory',  // 注意：非PPT模板字段，勿与上面的配件材质混淆
+      '佣金':'commission',
+      '小红书千帆链接标题':'xhsTitle'
+    };
+
+    let importSelectedKolId = null;
+    let importSelectedTplId = null;
+    let importExcelRows = [];      // 解析后的行数据数组
+    let importExcelHeaders = [];   // 原始表头
+    let importCurrentStep = 1;
+    let importImages = {};         // { 行索引: base64图片数组 }
+
+    // ===== Uint8Array 安全转 base64（避免大数组展开导致堆栈溢出）=====
+    function uint8ToBase64(u8) {
+      const CHUNK = 8192;
+      let binary = '';
+      for (let i = 0; i < u8.length; i += CHUNK) {
+        const slice = u8.subarray(i, Math.min(i + CHUNK, u8.length));
+        binary += String.fromCharCode(...slice);
+      }
+      return btoa(binary);
+    }
+
+    // ===== 从 XLSX 文件中提取单元格内嵌图片 =====
+    // 支持两种格式：
+    //   1. WPS格式 (金山文档)：xl/cellimages.xml + DISPIMG("UUID") 公式
+    //   2. 标准 Excel 格式：xl/drawings/drawingN.xml + twoCellAnchor 锚点
+    async function extractImagesFromXlsx(arrayBuffer, targetSheetIdx=1) {
+      try {
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        console.log('[IMG] extractImagesFromXlsx START, targetSheetIdx=' + targetSheetIdx);
+        // 调试：列出zip内所有关键文件
+        const allFiles = Object.keys(zip.files);
+        console.log('[IMG] ZIP内文件列表:', allFiles.filter(f => f.includes('cellimage') || f.includes('drawing') || f.includes('worksheet') || f.includes('media')));
+        let cellImages = {};
+        let mediaMap = {};
+
+        // ========== 格式1：WPS DISPIMG 格式 ==========
+        if (zip.file('xl/cellimages.xml')) {
+          console.log('[IMG] 检测到 WPS cellimages.xml 格式');
+          const cellImagesXml = await zip.file('xl/cellimages.xml').async('string');
+          const cellImagesRelsXml = zip.file('xl/_rels/cellimages.xml.rels')
+            ? await zip.file('xl/_rels/cellimages.xml.rels').async('string')
+            : '';
+          console.log('[IMG] cellimages.xml length=' + cellImagesXml.length + ', rels length=' + cellImagesRelsXml.length);
+
+          // 1. 从 cellimages.xml 提取：UUID (name) → rId (blip embed)
+          const uuidToRid = {};
+          const blocks = cellImagesXml.match(/<etc:cellImage>[\s\S]*?<\/etc:cellImage>/g) || [];
+          console.log('[IMG] 找到 ' + blocks.length + ' 个 cellImage 块');
+          for (const block of blocks) {
+            const nameMatch = block.match(/<xdr:cNvPr[^>]*name="(ID_[^"]+)"/);
+            const embedMatch = block.match(/r:embed="(rId\d+)"/);
+            if (nameMatch && embedMatch) {
+              uuidToRid[nameMatch[1]] = embedMatch[1];
+            }
+          }
+          console.log('[IMG] uuidToRid 映射数量=' + Object.keys(uuidToRid).length);
+
+          // 2. 从 cellimages.xml.rels 提取：rId → media 文件名
+          const ridToMediaName = {};
+          const relsRe = /Id="(rId\d+)"[^>]*Target="([^"]+)"/g;
+          let rm;
+          while ((rm = relsRe.exec(cellImagesRelsXml)) !== null) {
+            const fname = rm[2].replace(/^.*[\/]/, '');
+            ridToMediaName[rm[1]] = fname;
+          }
+          console.log('[IMG] ridToMediaName 映射数量=' + Object.keys(ridToMediaName).length);
+
+          // 3. 读取所有 media 文件 → base64
+          const mediaFiles = Object.keys(zip.files).filter(p => /^xl\/media\/.*\.(png|jpg|jpeg|gif|bmp|webp)$/i.test(p));
+          console.log('[IMG] 找到 ' + mediaFiles.length + ' 个 media 文件');
+          for (const path of mediaFiles) {
+            const fname = path.replace(/^.*[\/]/, '');
+            const ext = (fname.match(/\.(\w+)$/i)||['','png'])[1].toLowerCase();
+            const mime = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif', bmp:'image/bmp', webp:'image/webp' }[ext] || 'image/png';
+            const data = await zip.file(path).async('uint8array');
+            const b64 = uint8ToBase64(new Uint8Array(data));
+            mediaMap[fname] = 'data:' + mime + ';base64,' + b64;
+          }
+          console.log('[IMG] mediaMap 已加载 ' + Object.keys(mediaMap).length + ' 张图片');
+
+          // 4. 读取目标 sheet XML，解析 DISPIMG("UUID") 所在行
+          const sheetPath = `xl/worksheets/sheet${targetSheetIdx}.xml`;
+          console.log('[IMG] 读取 sheet: ' + sheetPath);
+          if (!zip.file(sheetPath)) {
+            console.log('[IMG] 未找到 sheet 文件: ' + sheetPath);
+            return { cellImages, mediaMap };
+          }
+          const sheetXml = await zip.file(sheetPath).async('string');
+          console.log('[IMG] sheetXml length=' + sheetXml.length);
+
+          // 匹配每个 <row r="N">...</row>
+          const rowRe = /<row\b[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g;
+          let rowm;
+          let rowCount = 0, imgRowCount = 0;
+          while ((rowm = rowRe.exec(sheetXml)) !== null) {
+            rowCount++;
+            const excelRow = parseInt(rowm[1]);
+            const rowContent = rowm[2];
+            // 找所有 DISPIMG(&quot;UUID&quot;)
+            const uuids = [];
+            const duRe = /DISPIMG\(&quot;([^&]+)&quot;/g;
+            let dm;
+            while ((dm = duRe.exec(rowContent)) !== null) {
+              uuids.push(dm[1]);
+            }
+            if (!uuids.length) continue;
+            imgRowCount++;
+            const rowIdx = excelRow - 2;  // 去掉表头行（row1=header）
+            if (rowIdx < 0) continue;
+            if (!cellImages[rowIdx]) cellImages[rowIdx] = [];
+            for (const uuid of uuids) {
+              const rid = uuidToRid[uuid];
+              const mediaName = rid ? ridToMediaName[rid] : null;
+              const base64 = mediaName ? mediaMap[mediaName] : null;
+              if (base64) cellImages[rowIdx].push(base64);
+            }
+          }
+          console.log('[IMG] WPS格式解析完成: 共' + rowCount + '行, 其中' + imgRowCount + '行有图片, 成功映射' + Object.keys(cellImages).length + '行');
+          return { cellImages, mediaMap };
+        }
+
+        // ========== 格式2：标准 Excel drawing 格式 ==========
+        console.log('[IMG] 尝试标准 Excel drawing 格式');
+        const mediaFiles2 = Object.keys(zip.files).filter(p => /^xl\/media\/.*\.(png|jpg|jpeg|gif|bmp|webp)$/i.test(p));
+        console.log('[IMG] 标准格式: 找到 ' + mediaFiles2.length + ' 个 media 文件');
+        if (mediaFiles2.length) {
+          for (const path of mediaFiles2) {
+            const m = path.match(/image(\d+)\.(png|jpe?g|gif|bmp|webp)$/i);
+            const ext = (path.match(/\.(\w+)$/i)||['','png'])[1].toLowerCase();
+            const mime = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif', bmp:'image/bmp', webp:'image/webp' }[ext] || 'image/png';
+            const data = await zip.file(path).async('uint8array');
+            const b64 = uint8ToBase64(new Uint8Array(data));
+            mediaMap[m ? m[1] : path] = 'data:' + mime + ';base64,' + b64;
+          }
+        }
+
+        // 遍历所有 sheet
+        const sheetPaths = Object.keys(zip.files)
+          .filter(p => /^xl\/worksheets\/sheet\d+\.xml$/i.test(p))
+          .sort();
+        console.log('[IMG] 标准格式: 找到 ' + sheetPaths.length + ' 个 sheet: ' + sheetPaths.join(', '));
+
+        for (const sheetPath of sheetPaths) {
+          const relsPath = sheetPath + '.rels';
+          if (!zip.file(relsPath)) { console.log('[IMG] 跳过 ' + sheetPath + ' (无 .rels)'); continue; }
+          const relsXml = await zip.file(relsPath).async('string');
+
+          // 找 drawing Target
+          const drawMatch = relsXml.match(/Id="(rId\d+)"[^>]*Type="[^"]*drawing"[^>]*Target="([^"]*)"/i);
+          if (!drawMatch) { console.log('[IMG] 跳过 ' + sheetPath + ' (无 drawing)'); continue; }
+          console.log('[IMG] sheet ' + sheetPath + ' drawing rels: ' + drawMatch[2]);
+
+          const drawPath = resolveRelativePath(sheetPath.replace(/[^/]+$/, '') + drawMatch[2]);
+          if (!zip.file(drawPath)) continue;
+          const drawingXml = await zip.file(drawPath).async('string');
+
+          // drawing rels → rId 到 mediaId 的映射
+          const drawRelsPath = drawPath.replace(/[^/]+$/, '') + '_rels/' + drawPath.split('/').pop() + '.rels';
+          let rIdToMedia = {};
+          if (zip.file(drawRelsPath)) {
+            const drawRelsXml = await zip.file(drawRelsPath).async('string');
+            const rrRe = /Id="([^"]+)"[^>]*Target="([^"]*)"/g;
+            let mm;
+            while ((mm = rrRe.exec(drawRelsXml)) !== null) {
+              const mediaM = (mm[2]||'').match(/image(\d+)/i);
+              rIdToMedia[mm[1]] = mediaM ? mediaM[1] : mm[2];
+            }
+          }
+
+          const sheetIdx = parseInt((sheetPath.match(/sheet(\d+)\.xml$/i)||['','1'])[1]);
+
+          console.log('[IMG] sheetIdx=' + sheetIdx + ', targetSheetIdx=' + targetSheetIdx + ', anchor块数=' + anchorBlocks.length);
+          for (const anchor of anchorBlocks) {
+            const rowMatch = anchor.match(/<xdr:from>[\s\S]*?<xdr:row>(\d+)<\/xdr:row>/m);
+            if (!rowMatch) continue;
+            const excelRow = parseInt(rowMatch[1]) + 1; // twoCellAnchor from 是 0-based
+
+            const embedMatch = anchor.match(/r:embed="(rId\d+)"/);
+            if (!embedMatch) continue;
+            const rid = embedMatch[1];
+            const mediaId = rIdToMedia[rid] || rid.replace('rId','');
+            const base64 = mediaMap[mediaId];
+            if (!base64) continue;
+
+            if (sheetIdx === targetSheetIdx) {
+              const rowIdx = excelRow - 3; // excelRow 是 1-based，-1 转为 0-based，再 -2 去掉 importExcelRows 的 header 行
+              if (rowIdx < 0) continue;
+              if (!cellImages[rowIdx]) cellImages[rowIdx] = [];
+              cellImages[rowIdx].push(base64);
+            }
+          }
+          console.log('[IMG] sheet ' + sheetPath + ' 解析完成, 当前共' + Object.keys(cellImages).length + '行有图');
+        }
+
+        console.log('[IMG] 标准格式解析完成: cellImages行数=' + Object.keys(cellImages).length);
+        return { cellImages, mediaMap };
+      } catch(e) {
+        console.warn('提取Excel图片失败:', e);
+        return { cellImages: {}, mediaMap: {} };
+      }
+    }
+
+    // 辅助：解析相对路径
+    function resolveRelativePath(p) {
+      const parts = p.split('/');
+      const resolved = [];
+      for (const part of parts) {
+        if (part === '..') resolved.pop();
+        else if (part && part !== '.') resolved.push(part);
+      }
+      return resolved.join('/');
+    }
+
+
+    function initImportView() {
+      importSelectedKolId = null;
+      importSelectedTplId = null;
+      importExcelRows = [];
+      importCurrentStep = 1;
+      importGoStep(1);
+    }
+
+    function importGoStep(n) {
+      importCurrentStep = n;
+      for (let i = 1; i <= 4; i++) {
+        const panel = document.getElementById('importStep'+i);
+        const step = document.getElementById('istep'+i);
+        if (panel) panel.classList.toggle('hidden', i !== n);
+        if (step) {
+          step.classList.remove('active','done');
+          if (i < n) step.classList.add('done');
+          else if (i === n) step.classList.add('active');
+        }
+      }
+      if (n === 1) renderImportKolGrid();
+    }
+
+    function renderImportKolGrid() {
+      const grid = document.getElementById('importKolGrid');
+      const empty = document.getElementById('importKolEmpty');
+      if (!kols.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = kols.map(k => {
+        const cnt = (templates[k.id] || []).length;
+        const sel = k.id === importSelectedKolId ? ' selected' : '';
+        return '<div class="kol-select-card'+sel+'" onclick="selectImportKol(\''+k.id+'\')">'+
+          '<div class="avatar">'+(k.emoji||'👤')+'</div>'+
+          '<div class="kname">'+k.name+'</div>'+
+          '<div class="ktpl">'+cnt+' 个模板</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    function selectImportKol(kolId) {
+      importSelectedKolId = kolId;
+      importSelectedTplId = null;
+      renderImportKolGrid();
+      document.getElementById('importStep1Next').disabled = false;
+    }
+
+    function importGoStep2() {
+      if (!importSelectedKolId) return;
+      const kol = kols.find(k => k.id === importSelectedKolId);
+      document.getElementById('importStep2Sub').textContent = '为「'+kol.name+'」选择一个 PPT 模板';
+      // 渲染模板列表
+      const grid = document.getElementById('importTplGrid');
+      const tpls = templates[importSelectedKolId] || [];
+      if (!tpls.length) {
+        grid.innerHTML = '<div style="color:var(--text-light);padding:20px;">该达人暂无模板，请先在「达人管理」中上传模板</div>';
+        document.getElementById('importStep2Next').disabled = true;
+      } else {
+        grid.innerHTML = tpls.map(t => {
+          const sel = t.id === importSelectedTplId ? ' selected' : '';
+          return '<div class="tpl-select-card'+sel+'" onclick="selectImportTpl(\''+t.id+'\')">'+
+            '<div class="tname">'+t.name+'</div>'+
+            '<div class="tmeta">'+t.slideCount+' 张幻灯片 · '+t.fields.length+' 个占位符</div>'+
+            '<div class="field-tags" style="margin-top:8px">'+t.fields.slice(0,5).map(f=>'<span class="field-tag">{{'+f+'}}</span>').join('')+(t.fields.length>5?'<span class="field-tag">...</span>':'')+'</div>'+
+          '</div>';
+        }).join('');
+        document.getElementById('importStep2Next').disabled = !importSelectedTplId;
+      }
+      importGoStep(2);
+    }
+
+    function selectImportTpl(tplId) {
+      importSelectedTplId = tplId;
+      document.querySelectorAll('.tpl-select-card').forEach(el => el.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+      document.getElementById('importStep2Next').disabled = false;
+    }
+
+    function importGoStep3() {
+      if (!importSelectedTplId) return;
+      resetExcelUpload();
+      importGoStep(3);
+    }
+
+    function handleExcelDrop(e) {
+      e.preventDefault();
+      document.getElementById('excelDropZone').classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) parseExcelFile(file);
+    }
+
+    function handleExcelFile(e) {
+      const file = e.target.files[0];
+      if (file) parseExcelFile(file);
+    }
+
+    function resetExcelUpload() {
+      importExcelRows = [];
+      importExcelHeaders = [];
+      importImages = {};
+      importParsedProducts = [];
+      importAIGenerated = false;
+      const aiBtn = document.getElementById('importAIBtn');
+      if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = '🤖 AI 生成文案'; }
+      document.getElementById('excelFileInput').value = '';
+      document.getElementById('excelPreviewArea').style.display = 'none';
+      document.getElementById('excelDropZone').style.display = 'block';
+      document.getElementById('importStep3Next').disabled = true;
+    }
+
+    async function parseExcelFile(file) {
+      // 先显示加载状态
+      const dropZone = document.getElementById('excelDropZone');
+      dropZone.innerHTML = '<div style="text-align:center"><div class="export-spinner" style="margin:0 auto 16px"></div><p>正在解析 Excel 数据并提取图片...</p></div>';
+      dropZone.style.display = 'block';
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          // 自动选择数据最多的 sheet（支持多 sheet Excel）
+          let importSourceSheetIdx = 1;
+          let maxRows = 0;
+          for (let si = 0; si < workbook.SheetNames.length; si++) {
+            const sh = workbook.Sheets[workbook.SheetNames[si]];
+            const r = XLSX.utils.sheet_to_json(sh, { header: 1, defval: '' });
+            if (r.length > maxRows) { maxRows = r.length; importSourceSheetIdx = si + 1; }
+          }
+          const sheet = workbook.Sheets[workbook.SheetNames[importSourceSheetIdx - 1]];
+          console.log('自动选择 sheet', importSourceSheetIdx, '数据行数:', maxRows);
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          if (!rows.length) { showErrorModal('Excel 为空', '文件中没有数据，请检查后重试'); resetExcelUpload(); return; }
+
+          // 第一行作为表头
+          importExcelHeaders = rows[0].map(h => String(h).trim());
+        importExcelRows = rows.slice(1).filter(r => r.some(c => c !== ''));
+
+        if (!importExcelRows.length) { showErrorModal('无数据行', '表头之后没有数据行，请检查后重试'); resetExcelUpload(); return; }
+
+        // 预解析为产品对象（供 AI 生成使用）
+        importParsedProducts = importExcelRows.map((row, idx) => excelRowToProduct(row, idx));
+
+        // 提取 Excel 中的内嵌图片
+          try {
+            const { cellImages } = await extractImagesFromXlsx(e.target.result, importSourceSheetIdx || 1);
+            importImages = cellImages;
+            // 回写 _excelImages 到已创建的产品对象（excelRowToProduct 在图片提取前执行，_excelImages 尚未设置）
+            importParsedProducts.forEach((p, idx) => {
+              p._excelImages = cellImages[idx] || [];
+            });
+            console.log('[IMG] 解析完成, importImages 行数=' + Object.keys(importImages).length + ', 内容预览=', JSON.stringify(Object.keys(importImages).slice(0,5)));
+          } catch(imgErr) {
+            console.warn('[IMG] 图片解析失败:', imgErr);
+            importImages = {};
+          }
+
+          // 渲染预览
+          renderExcelPreview(file.name);
+          document.getElementById('importStep3Next').disabled = false;
+        } catch(err) {
+          showErrorModal('解析失败', '无法读取文件：'+err.message);
+          resetExcelUpload();
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // 获取 Excel 某列在某行的值（找不到列返回空字符串）
+    function getExcelCell(row, headerName) {
+      const idx = importExcelHeaders.findIndex(h => h.trim() === headerName);
+      return idx >= 0 ? String(row[idx] != null ? row[idx] : '') : '';
+    }
+
+    // 把 Excel 行转成产品对象
+    // 匹配策略：
+    //  1. 精确匹配：PPT占位符名（如{{产品名称}}）直接对应Excel列名
+    //  2. CN_FIELD_MAP 别名：仅取第一个匹配的别名（避免"名称"和"产品名称"都覆盖name）
+    // 注意：第一遍中会同时识别别名映射，命中别名的列直接以映射字段名存储
+    function excelRowToProduct(row, rowIdx) {
+      const p = {};
+      // 记录哪些目标字段已被别名填充（保证每个字段只取第一个匹配的列）
+      const aliasFilledFields = new Set();
+
+      // 第一遍：精确匹配（PPT占位符名直接对应Excel列名，如{{产品名称}}）
+      // 同时：若列名可以通过 CN_FIELD_MAP 映射到字段，以映射名为 key（避免别名重复赋值）
+      importExcelHeaders.forEach((h, i) => {
+        const hTrim = h.trim();
+        if (!hTrim) return;
+        const mapped = CN_FIELD_MAP[hTrim];
+        if (mapped) {
+          // 列名命中别名 → 用映射字段名存，并标记已填充
+          p[mapped] = String(row[i] != null ? row[i] : '');
+          aliasFilledFields.add(mapped);
+        } else {
+          // 未命中别名 → 以原始列名存（供 buildFieldMap 的 m[列名] 取用）
+          p[hTrim] = String(row[i] != null ? row[i] : '');
+        }
+      });
+
+      // 第二遍：CN_FIELD_MAP 别名（仅填充尚未被第一遍设置的字段）
+      importExcelHeaders.forEach((h, i) => {
+        const field = CN_FIELD_MAP[h.trim()];
+        if (field && !p.hasOwnProperty(field) && !aliasFilledFields.has(field)) {
+          p[field] = String(row[i] != null ? row[i] : '');
+          aliasFilledFields.add(field);
+        }
+      });
+
+      // 保证有 id
+      if (!p.id) p.id = 'IMPORT-' + Date.now() + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+
+      // 附加 Excel 内嵌图片（从 extractImagesFromXlsx 结果中取出）
+      // importImages 的 key = JS数组索引 = r-2（drawing行号减2，跳过表头行）
+      // 所以 importImages[rowIdx] 与 importExcelRows[rowIdx] 一一对应
+      const rowImages = importImages[rowIdx] || [];
+      if (rowImages.length > 0) {
+        p._excelImages = rowImages; // 内部使用，不进模板
+      }
+
+      return p;
+    }
+
+    // 构建"Excel列→字段"映射表（用于预览和确认表格）
+    // 返回 [{header, field, matchType}]，matchType = 'exact'|'fuzzy'|'none'
+    function buildHeaderFieldMap(tplFields) {
+      return importExcelHeaders.map(h => {
+        const hTrim = h.trim();
+        // 优先：Excel列名 精确=模板占位符名
+        if (tplFields.includes(hTrim)) {
+          return { header: h, field: hTrim, matchType: 'exact' };
+        }
+        // 其次：CN_FIELD_MAP 别名
+        const alias = CN_FIELD_MAP[hTrim];
+        if (alias) {
+          return { header: h, field: alias, matchType: 'fuzzy' };
+        }
+        return { header: h, field: null, matchType: 'none' };
+      });
+    }
+
+    function renderExcelPreview(fileName) {
+      document.getElementById('excelDropZone').style.display = 'none';
+      document.getElementById('excelPreviewArea').style.display = 'block';
+      document.getElementById('excelPreviewTitle').textContent =
+        '📊 '+fileName+' · 共 '+importExcelRows.length+' 行数据（每行生成一页 PPT）';
+
+      const tpl = (templates[importSelectedKolId]||[]).find(t=>t.id===importSelectedTplId);
+      const tplFields = tpl ? tpl.fields : [];
+
+      // 显示最多5行预览
+      const previewRows = importExcelRows.slice(0,5);
+      const headerMap = buildHeaderFieldMap(tplFields);
+
+      // 图片统计
+      const totalImages = Object.values(importImages).reduce((s, arr) => s + arr.length, 0);
+      const imgInfoMsg = totalImages > 0
+        ? '<div style="margin:12px 0;padding:10px 16px;background:#fff3e0;border-radius:8px;font-size:13px;color:#e65100"><strong>📷 检测到 '+totalImages+' 张单元格内嵌图片</strong>，已自动关联到对应行，导出 PPT 时将直接嵌入</div>'
+        : '<div style="margin:12px 0;padding:10px 16px;background:#f5f5f5;border-radius:8px;font-size:13px;color:#888">未检测到单元格内嵌图片，PPT 图片将使用产品库中已上传的图片</div>';
+
+      let html = imgInfoMsg + '<div style="overflow-x:auto;"><table class="excel-preview-table" id="excelPreviewTable"></table></div>';
+      document.getElementById('excelPreviewArea').innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'+
+        '<strong>📊 '+fileName+' · 共 '+importExcelRows.length+' 行（每行生成一页 PPT）</strong>'+
+        '<span>'+
+          '<button class="btn btn-sm btn-purple" id="importAIBtn" onclick="generateImportAI()" style="margin-right:8px;">🤖 AI 生成文案</button>'+
+          '<button class="btn btn-sm btn-secondary" onclick="resetExcelUpload()">重新上传</button>'+
+        '</span></div>';
+      document.getElementById('excelPreviewArea').innerHTML += html;
+
+      // 渲染表格（重新找 table）
+      const table = document.getElementById('excelPreviewTable');
+      let thtml = '<thead><tr><th style="width:44px;text-align:center">📷</th>';
+      headerMap.forEach(c => {
+        let badge = '';
+        if (c.matchType === 'exact') badge = '<span class="match-badge ok">✓ 精确</span>';
+        else if (c.matchType === 'fuzzy' && tplFields.includes(c.field)) badge = '<span class="match-badge ok">✓ 别名</span>';
+        else if (c.matchType === 'fuzzy') badge = '<span class="match-badge miss">别名</span>';
+        else badge = '<span class="match-badge miss">未识别</span>';
+        thtml += '<th>'+c.header+'<br>'+badge+'</th>';
+      });
+      thtml += '</tr></thead><tbody>';
+      previewRows.forEach((row, i) => {
+        const imgCount = importImages[i] ? importImages[i].length : 0;
+        const imgTag = imgCount > 0
+          ? '<span style="color:#4CAF50;font-weight:bold" title="此行含 '+imgCount+' 张图片">📷×'+imgCount+'</span>'
+          : '<span style="color:#ccc">—</span>';
+        thtml += '<tr><td style="text-align:center">'+imgTag+'</td>';
+        importExcelHeaders.forEach((_, ci) => {
+          thtml += '<td>'+ String(row[ci]||'') +'</td>';
+        });
+        thtml += '</tr>';
+      });
+      if (importExcelRows.length > 5) {
+        thtml += '<tr><td colspan="'+(importExcelHeaders.length+1)+'" style="text-align:center;color:var(--text-light);font-style:italic">...还有 '+(importExcelRows.length-5)+' 行未显示...</td></tr>';
+      }
+      thtml += '</tbody>';
+      table.innerHTML = thtml;
+      document.getElementById('excelPreviewTable').innerHTML = html;
+    }
+
+    function importGoStep4() {
+      if (!importExcelRows.length) return;
+      const kol = kols.find(k => k.id === importSelectedKolId);
+      const tpl = (templates[importSelectedKolId]||[]).find(t=>t.id===importSelectedTplId);
+
+      // 构建摘要
+      document.getElementById('importSummary').innerHTML =
+        '<div class="row"><span>达人</span><span class="val">'+(kol?kol.name:'—')+'</span></div>'+
+        '<div class="row"><span>模板</span><span class="val">'+(tpl?tpl.name:'—')+'</span></div>'+
+        '<div class="row"><span>数据行数</span><span class="val">'+importExcelRows.length+' 行</span></div>'+
+        '<div class="row"><span>预计生成 PPT 页数</span><span class="val">'+importExcelRows.length+' 页</span></div>';
+
+      // 确认表格：只显示实际会被映射到模板占位符的列（精确+别名均算）
+      const tplFields = tpl ? tpl.fields : [];
+      const headerMap = buildHeaderFieldMap(tplFields);
+      // 筛选：field 在模板占位符中
+      const visibleCols = headerMap.filter(c => c.field && tplFields.includes(c.field));
+
+      if (!visibleCols.length) {
+        // 兜底：没有可匹配列时显示原始表头
+        let html = '<thead><tr><th>#</th>';
+        importExcelHeaders.forEach(h => html += '<th>'+h+'</th>');
+        html += '</tr></thead><tbody>';
+        importExcelRows.forEach((row, i) => {
+          html += '<tr><td>'+(i+1)+'</td>';
+          importExcelHeaders.forEach((_, ci) => {
+            html += '<td>'+String(row[ci]||'—')+'</td>';
+          });
+          html += '</tr>';
+        });
+        html += '</tbody>';
+        document.getElementById('importConfirmTable').innerHTML = html;
+      } else {
+        let html = '<thead><tr><th>#</th>';
+        visibleCols.forEach(c => {
+          const matchTag = c.matchType === 'exact' ? '★' : '○';
+          html += '<th>'+matchTag+' '+c.header+'</th>';
+        });
+        html += '</tr></thead><tbody>';
+        importExcelRows.forEach((row, i) => {
+          html += '<tr><td>'+(i+1)+'</td>';
+          visibleCols.forEach(c => {
+            const val = getExcelCell(row, c.header);
+            html += '<td>'+(val||'—')+'</td>';
+          });
+          html += '</tr>';
+        });
+        html += '</tbody>';
+        document.getElementById('importConfirmTable').innerHTML = html;
+      }
+      importGoStep(4);
+    }
+
+    async function doImportExportPPT() {
+      // 优先使用 AI 生成后的产品列表（含 intro/design 等字段）
+      if (!importParsedProducts.length) {
+        importParsedProducts = importExcelRows.map((row, i) => excelRowToProduct(row, i));
+      }
+      const productList = importParsedProducts;
+      const kolId = importSelectedKolId;
+      const tplId = importSelectedTplId;
+      await doExportPPT(productList, kolId, tplId, true);
+    }
+
+    // ============ 初始化 ============
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProducts();
+      renderKols();
+      console.log('✅ 景心如意产品手卡系统已加载');
+      console.log('📦 产品数量:', products.length);
+      console.log('🎯 达人数量:', kols.length);
+    });
   </script>
 </body>
 </html>
