@@ -2,10 +2,7 @@
   "name": "jxry-cards",
   "version": "1.0.0",
   "private": true,
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "scripts": {
-    "build": "node build-config.js && node -e \"const fs=require('fs');fs.mkdirSync('public',{recursive:true});['index.html','config.js','export.js','jszip.min.js','pptxgen.full.bundle.js','xlsx.full.min.js'].forEach(f=>{if(fs.existsSync(f))fs.copyFileSync(f,'public/'+f)});console.log('Files copied to public/')\""
+    "build": "echo 'static build - no steps needed'"
   }
 }

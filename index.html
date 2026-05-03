@@ -538,10 +538,16 @@
   <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
 
-  <script src="jszip.min.js"></script>
-  <script src="pptxgen.full.bundle.js"></script>
-  <script src="xlsx.full.min.js"></script>
-  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    window.JXRY_CONFIG = {
+      DEEPSEEK_API_KEY: 'sk-5465f68409bd4dbe862838b04b275b24',
+      DEEPSEEK_API_URL: 'https://api.deepseek.com/chat/completions',
+      DEEPSEEK_MODEL:   'deepseek-chat'
+    };
+  </script>
   <script>
     // ============ 数据存储 ============
     let products = JSON.parse(localStorage.getItem('jxry_products') || '[]');
