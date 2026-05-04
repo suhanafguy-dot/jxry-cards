@@ -283,7 +283,7 @@
       <div class="import-panel hidden" id="importStep3">
         <h3>第三步：上传 Excel 数据</h3>
         <p class="sub">每行对应一页 PPT，第一行为中文表头，系统自动匹配字段</p>
-        <div class="template-hint"><strong>📋 支持的中文列名</strong>产品名称、日常价、直播价、库存、产地、尺寸、手围、材质、产品介绍、产地介绍、设计诠释、物流信息、产品编号、达人前缀</div>
+        <div class="template-hint"><strong>📋 支持的中文列名</strong>产品名称、材质类型、主石等级、日常价、直播价、库存、产地、尺寸、手围、材质、产品介绍、产地介绍、设计诠释、物流信息、产品编号、达人前缀</div>
         <div class="template-hint" style="background:#e8f5e9;border-color:#81c784"><strong>🖼️ Excel 内嵌图片支持</strong>如果 Excel 中有单元格内嵌图片，系统会自动提取并关联到对应行的产品，导出 PPT 时直接嵌入，无需额外上传。</div>
         <div class="excel-upload-area" id="excelDropZone" onclick="document.getElementById('excelFileInput').click()"
           ondragover="event.preventDefault();this.classList.add('dragover')"
@@ -379,6 +379,23 @@
           <div class="form-group">
             <label>配件材质</label>
             <input type="text" name="material" placeholder="如：纯银镀金配饰">
+          </div>
+          <div class="form-group">
+            <label>材质类型</label>
+            <select name="materialType" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit">
+              <option value="">选择材质类型</option>
+              <option value="沉香">沉香</option>
+              <option value="琥珀">琥珀</option>
+              <option value="蜜蜡">蜜蜡</option>
+              <option value="和田玉">和田玉</option>
+              <option value="翡翠">翡翠</option>
+              <option value="复合材质">复合材质</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>主石等级</label>
+            <input type="text" name="gradeLevel" placeholder="如：沉水级、鸡油黄、羊脂白、冰种起荧、A货满绿">
           </div>
         </div>
         <div class="form-section">
@@ -735,7 +752,9 @@
           (p.origin ? '<div class="card-spec"><span class="label">产地</span><span class="value">'+p.origin+'</span></div>' : '')+
           (p.size ? '<div class="card-spec"><span class="label">尺寸</span><span class="value">'+p.size+'</span></div>' : '')+
           (p.length ? '<div class="card-spec"><span class="label">手围</span><span class="value">'+p.length+'</span></div>' : '')+
-          (p.material ? '<div class="card-spec"><span class="label">材质</span><span class="value">'+p.material+'</span></div>' : '')+
+          (p.materialType ? '<div class="card-spec"><span class="label">材质类型</span><span class="value">'+p.materialType+'</span></div>' : '')+
+          (p.gradeLevel ? '<div class="card-spec"><span class="label">主石等级</span><span class="value">'+p.gradeLevel+'</span></div>' : '')+
+          (p.material ? '<div class="card-spec"><span class="label">配件材质</span><span class="value">'+p.material+'</span></div>' : '')+
         '</div><div class="card-image">'+(mainImg ? '<img src="'+mainImg+'" alt="产品图片">' : '<span class="placeholder">暂无图片</span>')+'</div></div></div>'+
         '<div class="card-footer"><span>📦 '+(p.logistics||'顺丰包邮 | 附鉴定证书')+'</span><span class="brand">景心如意 JXRY</span></div>'+
       '</div>';
@@ -776,6 +795,65 @@
     const DS_URL  = DS_CFG.DEEPSEEK_API_URL || 'https://api.deepseek.com/chat/completions';
     const DS_MODEL = DS_CFG.DEEPSEEK_MODEL  || 'deepseek-chat';
 
+    // 材质类型 → AI 文案知识库配置
+    const MATERIAL_PROMPTS = {
+      '沉香': {
+        category: '沉香',
+        introFocus: '香气层次、结香年份、产区稀缺、文化底蕴、佩戴养神',
+        originFocus: '该产区沉香的特点、香气特征和文化地位',
+        designFocus: '这款沉香手串的设计思路：如何兼顾佩戴舒适与美学表达，如何突显沉香本身的气质',
+        defaultAccent: '沉香'
+      },
+      '琥珀': {
+        category: '琥珀',
+        introFocus: '千万年树脂化石、内含物收藏价值、透光色泽变化、琥珀酸的养生价值',
+        originFocus: '该产区琥珀的特点、色泽特征和地质背景',
+        designFocus: '这款琥珀饰品的设计思路：如何呈现琥珀通透明亮的质感，如何通过镶嵌或搭配突显天然光泽',
+        defaultAccent: '琥珀'
+      },
+      '蜜蜡': {
+        category: '蜜蜡',
+        introFocus: '地质年份、鹅黄/鸡油黄/白蜜稀有度、氧化变色收藏潜力、温润质感',
+        originFocus: '该产区蜜蜡的特点、蜡质饱满程度和市场地位',
+        designFocus: '这款蜜蜡饰品的设计思路：如何保留蜜蜡天然温润的质感，如何在简约与精致之间找到平衡',
+        defaultAccent: '蜜蜡'
+      },
+      '和田玉': {
+        category: '和田玉',
+        introFocus: '温润质感、羊脂白玉/碧玉/青玉品级、摩氏硬度、历代文人推崇的君子气质',
+        originFocus: '该产区和田玉的特点、玉质细腻度和市场稀缺性',
+        designFocus: '这款和田玉饰品的设计思路：如何体现"玉不琢不成器"的工艺价值，如何与传统美学融合',
+        defaultAccent: '和田玉'
+      },
+      '翡翠': {
+        category: '翡翠',
+        introFocus: '种水色底、A货天然属性、颜色稀缺性、传代收藏价值',
+        originFocus: '该产区翡翠的特点、色根分布和矿口背景',
+        designFocus: '这款翡翠饰品的设计思路：如何通过镶嵌最大程度呈现翡翠的颜色和透明度，如何平衡传统与时尚',
+        defaultAccent: '翡翠'
+      },
+      '复合材质': {
+        category: '复合材质珠宝',
+        introFocus: '多材质搭配的层次感、材质间相互映衬的视觉效果、整体设计的协调性',
+        originFocus: '各材质的产地背景与品质特点',
+        designFocus: '这款复合材质饰品的设计思路：如何让不同材质和谐共存、相互增色，如何通过设计体现1+1>2的效果',
+        defaultAccent: '珠宝'
+      },
+      '其他': {
+        category: '珠宝',
+        introFocus: '天然材质的独特美感、工艺价值、稀缺性、佩戴和收藏双重价值',
+        originFocus: '该材质的产地背景和品质特点',
+        designFocus: '这款饰品的设计思路：如何呈现材质本身最美的特质，如何在简约设计中体现工艺价值',
+        defaultAccent: '珠宝'
+      }
+    };
+
+    // 根据材质类型获取 AI 文案提示词
+    function getAIPrompts(materialType) {
+      const cfg = MATERIAL_PROMPTS[materialType] || MATERIAL_PROMPTS['其他'];
+      return cfg;
+    }
+
     async function callDeepSeek(prompt) {
       if (!DS_KEY) { showErrorModal('未配置 API Key', '请在 config.js 中配置 DEEPSEEK_API_KEY'); return null; }
       const res = await fetch(DS_URL, {
@@ -789,27 +867,41 @@
     }
 
     async function generateAI() {
-      const name      = document.querySelector('[name="name"]')?.value?.trim();
-      const origin    = document.querySelector('[name="origin"]')?.value?.trim();
-      const size      = document.querySelector('[name="size"]')?.value?.trim();
-      const material  = document.querySelector('[name="material"]')?.value?.trim();
-      const category  = document.querySelector('[name="category"]')?.value?.trim();
+      const name        = document.querySelector('[name="name"]')?.value?.trim();
+      const origin      = document.querySelector('[name="origin"]')?.value?.trim();
+      const size        = document.querySelector('[name="size"]')?.value?.trim();
+      const material    = document.querySelector('[name="material"]')?.value?.trim();
+      const materialType = document.querySelector('[name="materialType"]')?.value?.trim() || '其他';
+      const gradeLevel  = document.querySelector('[name="gradeLevel"]')?.value?.trim();
       if (!name) { showToast('请先填写产品名称', ''); return; }
 
       const btn = event?.target?.closest('button');
       if (btn) { btn.disabled = true; btn.textContent = '🤖 生成中...'; }
 
+      const cfg = getAIPrompts(materialType);
+      const gradeLine = gradeLevel ? `\n主石等级：${gradeLevel}` : '';
+
       try {
-        // 三段并行请求
         const [intro, originDesc, design] = await Promise.all([
-          callDeepSeek(`你是一位高端沉香品牌「景心如意」的文案策划。请根据以下产品信息，写一段产品介绍（80-120字），语言优雅、有文化底蕴，不夸大，适合直播口播或手卡展示。\n\n产品名称：${name}\n产地：${origin || '未知'}\n尺寸：${size || '未知'}\n材质：${material || '沉香'}\n\n要求：突出稀缺性、文化感、佩戴价值。只输出文案正文，不要标题和解释。`),
-          callDeepSeek(`你是一位沉香文化专家。请根据产地「${origin || '东南亚'}」，写一段产地介绍（60-100字），介绍该产区沉香的特点、香气特征和文化地位。语言有画面感，适合高端客户阅读。只输出正文。`),
-          callDeepSeek(`你是一位珠宝设计师。请根据产品信息，写一段设计理念说明（60-100字），讲述这款沉香手串的设计思路：如何兼顾佩戴舒适与美学表达，如何突显沉香本身的气质。语言简约有质感。只输出正文。\n\n产品名称：${name}\n尺寸：${size || '未知'}\n配件材质：${material || '未知'}`)
+          callDeepSeek(`你是一位高端${cfg.category}品牌「景心如意」的文案策划。请根据以下产品信息，写一段产品介绍（80-120字），语言优雅、有文化底蕴，不夸大，适合直播口播或手卡展示。
+
+产品名称：${name}
+产地：${origin || '未知'}
+尺寸：${size || '未知'}
+配件材质：${material || '未知'}${gradeLine}
+
+要求：突出${cfg.introFocus}${gradeLevel ? `，并重点体现"${gradeLevel}"这一品质特征` : ''}。只输出文案正文，不要标题和解释。`),
+          callDeepSeek(`你是一位${cfg.category}文化专家。请根据产地「${origin || '产区未知'}」，写一段产地介绍（60-100字），介绍${cfg.originFocus}。语言有画面感，适合高端客户阅读。只输出正文。`),
+          callDeepSeek(`你是一位珠宝设计师。请根据产品信息，写一段设计理念说明（60-100字），讲述${cfg.designFocus}。语言简约有质感。只输出正文。
+
+产品名称：${name}
+尺寸：${size || '未知'}
+配件材质：${material || '未知'}${gradeLine}`)
         ]);
 
-        if (intro)      document.querySelector('[name="intro"]').value     = intro;
+        if (intro)      document.querySelector('[name="intro"]').value      = intro;
         if (originDesc) document.querySelector('[name="originDesc"]').value = originDesc;
-        if (design)     document.querySelector('[name="design"]').value    = design;
+        if (design)     document.querySelector('[name="design"]').value     = design;
         showToast('AI 文案已生成，可自行修改', 'success');
       } catch (e) {
         showErrorModal('AI 生成失败', e.message || '请检查 API Key 或网络');
@@ -831,18 +923,32 @@
       let ok = 0, fail = 0;
       for (let i = 0; i < importParsedProducts.length; i++) {
         const p = importParsedProducts[i];
+        const materialType = p.materialType?.trim() || '其他';
+        const cfg = getAIPrompts(materialType);
+        const gradeLine = p.gradeLevel?.trim() ? `\n主石等级：${p.gradeLevel.trim()}` : '';
+        const gradeHighlight = p.gradeLevel?.trim() ? `，并重点体现"${p.gradeLevel.trim()}"这一品质特征` : '';
         try {
           const [intro, originDesc, design] = await Promise.all([
-            p.origin || p.name ? callDeepSeek(`你是一位高端沉香品牌「景心如意」的文案策划。请根据以下产品信息，写一段产品介绍（80-120字），语言优雅、有文化底蕴，不夸大，适合直播口播或手卡展示。\n\n产品名称：${p.name || ''}\n产地：${p.origin || '未知'}\n尺寸：${p.size || '未知'}\n材质：${p.material || '沉香'}\n\n要求：突出稀缺性、文化感、佩戴价值。只输出文案正文，不要标题和解释。`) : Promise.resolve(''),
-            p.origin ? callDeepSeek(`你是一位沉香文化专家。请根据产地「${p.origin}」，写一段产地介绍（60-100字），介绍该产区沉香的特点、香气特征和文化地位。语言有画面感，适合高端客户阅读。只输出正文。`) : Promise.resolve(''),
-            callDeepSeek(`你是一位珠宝设计师。请根据产品信息，写一段设计理念说明（60-100字），讲述这款沉香手串的设计思路：如何兼顾佩戴舒适与美学表达，如何突显沉香本身的气质。语言简约有质感。只输出正文。\n\n产品名称：${p.name || ''}\n尺寸：${p.size || '未知'}\n配件材质：${p.material || '未知'}`)
+            p.name ? callDeepSeek(`你是一位高端${cfg.category}品牌「景心如意」的文案策划。请根据以下产品信息，写一段产品介绍（80-120字），语言优雅、有文化底蕴，不夸大，适合直播口播或手卡展示。
+
+产品名称：${p.name || ''}
+产地：${p.origin || '未知'}
+尺寸：${p.size || '未知'}
+配件材质：${p.material || '未知'}${gradeLine}
+
+要求：突出${cfg.introFocus}${gradeHighlight}。只输出文案正文，不要标题和解释。`) : Promise.resolve(''),
+            p.origin ? callDeepSeek(`你是一位${cfg.category}文化专家。请根据产地「${p.origin}」，写一段产地介绍（60-100字），介绍${cfg.originFocus}。语言有画面感，适合高端客户阅读。只输出正文。`) : Promise.resolve(''),
+            p.name ? callDeepSeek(`你是一位珠宝设计师。请根据产品信息，写一段设计理念说明（60-100字），讲述${cfg.designFocus}。语言简约有质感。只输出正文。
+
+产品名称：${p.name || ''}
+尺寸：${p.size || '未知'}
+配件材质：${p.material || '未知'}${gradeLine}`) : Promise.resolve('')
           ]);
           if (intro)      p.intro      = intro;
           if (originDesc) p.originDesc = originDesc;
           if (design)     p.design     = design;
           ok++;
         } catch (e) { fail++; console.warn('AI 生成失败（行'+(i+2)+'）：', e.message); }
-        // 更新进度
         btn.textContent = `🤖 ${i+1}/${importParsedProducts.length}...`;
         await delay(200);
       }
@@ -1524,7 +1630,8 @@
         'originDesc':  str(p.originDesc),
         'design':      str(p.design),
         'logistics':   str(p.logistics, '顺丰包邮 | 附鉴定证书'),
-        'id':          str(p.id)
+        'id':          str(p.id),
+        'gradeLevel':  str(p.gradeLevel)
       };
       // 中文字段名别名
       m['产品名称']= m['name'];  m['日常价']= m['dailyPrice'];
@@ -1535,7 +1642,9 @@
       m['配件材质']= m['material'];  m['材质']= m['material'];
       m['产品介绍']= m['intro'];  m['介绍']= m['intro'];
       m['设计诠释']= m['design'];  m['设计']= m['design'];
-      m['物流说明']= m['logistics'];  m['物流']= m['logistics'];
+      m[        '物流说明']= m['logistics'];  m['物流']= m['logistics'];
+      m['材质类型']= m['materialType'];
+      m['主石等级']= m['gradeLevel'];  m['等级']= m['gradeLevel'];  m['品级']= m['gradeLevel'];
       return m;
     }
 
@@ -1805,7 +1914,9 @@
       '配石材质':'sideStone',
       '配件材质（贵）':'accessory',  // 注意：非PPT模板字段，勿与上面的配件材质混淆
       '佣金':'commission',
-      '小红书千帆链接标题':'xhsTitle'
+      '小红书千帆链接标题':'xhsTitle',
+      '材质类型':'materialType',
+      '主石等级':'gradeLevel','等级':'gradeLevel','品级':'gradeLevel'
     };
 
     let importSelectedKolId = null;
